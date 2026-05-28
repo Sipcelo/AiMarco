@@ -1,0 +1,11 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@backend/*": ["../../backend/src/*"]
+    },
+    "types": ["jest", "react"]
+  },
+  "include": ["**/*", "../../backend/src/shared/schemas.ts"]
+}

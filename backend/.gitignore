@@ -1,0 +1,35 @@
+# env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*service*.txt
+*supa*.txt
+*supa-status.json
+backend/supa-*.txt
+backend/supa-status.json
+
+# dependencies
+node_modules/
+
+# build/cache
+dist/
+build/
+.expo/
+web/test-results/
+
+# logs
+*.log
+logs/
+
+# local tooling
+.agent/
+.agents/
+.claude/
+.claude/worktrees/
+
+# python
+venv/
+.venv/
+backend/venv/

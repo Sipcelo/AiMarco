@@ -1,0 +1,41 @@
+{
+  "name": "ai-marco-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:server": "tsx watch src/server.ts",
+    "dev:worker": "tsx watch src/worker.ts",
+    "dev": "run-p dev:server dev:worker",
+    "build": "tsc -p tsconfig.json",
+    "build:tsc": "tsc -p tsconfig.json",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:gauntlet": "vitest run tests/integration/auth-gauntlet.test.ts",
+    "start": "run-p start:server start:worker",
+    "start:server": "node dist/server.js",
+    "start:worker": "node dist/worker.js",
+    "init-memory": "tsx src/scripts/init-memory.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.2.0",
+    "@fastify/rate-limit": "^10.3.0",
+    "@fastify/static": "^9.0.0",
+    "@supabase/supabase-js": "^2.48.0",
+    "dotenv": "^17.3.1",
+    "fastify": "^5.8.4",
+    "fastify-plugin": "^5.1.0",
+    "litellm": "latest",
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.15",
+    "@types/pg": "^8.20.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "npm-run-all": "^4.1.5",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.2"
+  }
+}

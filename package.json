@@ -1,0 +1,16 @@
+{
+  "name": "ai-marco-root",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "web",
+    "backend"
+  ],
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "start": "node backend/dist/server.js"
+  }
+}
