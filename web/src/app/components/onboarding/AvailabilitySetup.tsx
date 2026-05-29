@@ -4,11 +4,17 @@ import { ProgressBar } from '../ui/ProgressBar';
 import { Toggle } from '../ui/Toggle';
 import { createAvailability } from '../../services/onboarding.api';
 
+interface TimeWindow {
+  enabled: boolean;
+  startTime: string;
+  endTime: string;
+}
+
 interface DaySchedule {
   day: string;
   isOpen: boolean;
-  startTime: string;
-  endTime: string;
+  morning: TimeWindow;
+  afternoon: TimeWindow;
 }
 
 interface AvailabilitySetupProps {
@@ -21,50 +27,69 @@ interface AvailabilitySetupProps {
 }
 
 const initialSchedule: DaySchedule[] = [
-  { day: 'Segunda', isOpen: false, startTime: '09:00', endTime: '18:00' },
-  { day: 'Terca', isOpen: false, startTime: '09:00', endTime: '18:00' },
-  { day: 'Quarta', isOpen: false, startTime: '09:00', endTime: '18:00' },
-  { day: 'Quinta', isOpen: false, startTime: '09:00', endTime: '18:00' },
-  { day: 'Sexta', isOpen: false, startTime: '09:00', endTime: '18:00' },
-  { day: 'Sabado', isOpen: false, startTime: '09:00', endTime: '18:00' },
-  { day: 'Domingo', isOpen: false, startTime: '09:00', endTime: '18:00' },
+  { day: 'Segunda',  isOpen: true,  morning: { enabled: true, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: true, startTime: '14:00', endTime: '18:00' } },
+  { day: 'Terca',    isOpen: true,  morning: { enabled: true, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: true, startTime: '14:00', endTime: '18:00' } },
+  { day: 'Quarta',   isOpen: true,  morning: { enabled: true, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: true, startTime: '14:00', endTime: '18:00' } },
+  { day: 'Quinta',   isOpen: true,  morning: { enabled: true, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: true, startTime: '14:00', endTime: '18:00' } },
+  { day: 'Sexta',    isOpen: true,  morning: { enabled: true, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: true, startTime: '14:00', endTime: '18:00' } },
+  { day: 'Sabado',   isOpen: true,  morning: { enabled: true, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: true, startTime: '14:00', endTime: '18:00' } },
+  { day: 'Domingo',  isOpen: false, morning: { enabled: false, startTime: '08:00', endTime: '11:00' }, afternoon: { enabled: false, startTime: '14:00', endTime: '18:00' } },
 ];
+
+const DAY_NUMBER: Record<string, number> = {
+  Domingo: 0, Segunda: 1, Terca: 2, Quarta: 3, Quinta: 4, Sexta: 5, Sabado: 6,
+};
 
 export function AvailabilitySetup({ onNext, onBack, professionalId, token, setGlobalLoading, setGlobalError }: AvailabilitySetupProps) {
   const [schedule, setSchedule] = useState<DaySchedule[]>(initialSchedule);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleToggle = (index: number, isOpen: boolean) => {
-    const next = [...schedule];
-    next[index].isOpen = isOpen;
+  const toggleDay = (index: number, isOpen: boolean) => {
+    const next = schedule.map((d, i) => i === index ? { ...d, isOpen } : d);
     setSchedule(next);
   };
 
-  const handleTimeChange = (index: number, field: 'startTime' | 'endTime', value: string) => {
-    const next = [...schedule];
-    next[index][field] = value;
+  const togglePeriod = (index: number, period: 'morning' | 'afternoon', enabled: boolean) => {
+    const next = schedule.map((d, i) =>
+      i === index ? { ...d, [period]: { ...d[period], enabled } } : d
+    );
     setSchedule(next);
   };
 
-  const dayToNumber = (day: string): number => {
-    const map: Record<string, number> = {
-      Domingo: 0,
-      Segunda: 1,
-      Terca: 2,
-      Quarta: 3,
-      Quinta: 4,
-      Sexta: 5,
-      Sabado: 6,
-    };
-    return map[day] || 0;
+  const changeTime = (index: number, period: 'morning' | 'afternoon', field: 'startTime' | 'endTime', value: string) => {
+    const next = schedule.map((d, i) =>
+      i === index ? { ...d, [period]: { ...d[period], [field]: value } } : d
+    );
+    setSchedule(next);
   };
 
   const handleSubmit = async () => {
-    const openDays = schedule.filter((day) => day.isOpen);
+    const openDays = schedule.filter((d) => d.isOpen);
     if (openDays.length === 0) {
-      setError('Selecione pelo menos um dia da semana');
-      setGlobalError('Selecione pelo menos um dia da semana');
+      const msg = 'Selecione pelo menos um dia da semana';
+      setError(msg);
+      setGlobalError(msg);
+      return;
+    }
+
+    // Build batch payload — up to 2 rules per open day
+    const rules = openDays.flatMap((day) => {
+      const dayNum = DAY_NUMBER[day.day];
+      const windows = [];
+      if (day.morning.enabled) {
+        windows.push({ day_of_week: dayNum, start_time: day.morning.startTime, end_time: day.morning.endTime, is_active: true });
+      }
+      if (day.afternoon.enabled) {
+        windows.push({ day_of_week: dayNum, start_time: day.afternoon.startTime, end_time: day.afternoon.endTime, is_active: true });
+      }
+      return windows;
+    });
+
+    if (rules.length === 0) {
+      const msg = 'Habilite pelo menos um periodo (manha ou tarde)';
+      setError(msg);
+      setGlobalError(msg);
       return;
     }
 
@@ -74,27 +99,19 @@ export function AvailabilitySetup({ onNext, onBack, professionalId, token, setGl
     setGlobalError(null);
 
     try {
-      await Promise.all(openDays.map((day) =>
-        createAvailability(professionalId, token, {
-          day_of_week: dayToNumber(day.day),
-          start_time: day.startTime,
-          end_time: day.endTime,
-        }),
-      ));
-
+      await createAvailability(professionalId, token, rules);
       setIsSubmitting(false);
       setGlobalLoading(false);
       onNext(schedule);
     } catch (err: any) {
       setIsSubmitting(false);
       setGlobalLoading(false);
-      const message = err.message || 'Erro ao salvar disponibilidade';
-
+      const message = err.message || '';
       if (message.includes('401') || message.includes('unauthorized')) {
         setError('Sessao expirada');
         setGlobalError('Sessao expirada');
-      } else if (message.includes('400') || message.includes('invalid')) {
-        setError('Horarios invalidos');
+      } else if (message.includes('400') || message.includes('invalid') || message.includes('sobrepor')) {
+        setError('Horarios invalidos ou sobrepostos');
         setGlobalError('Horarios invalidos');
       } else {
         setError('Erro de conexao. Tente novamente.');
@@ -109,7 +126,7 @@ export function AvailabilitySetup({ onNext, onBack, professionalId, token, setGl
         <section className="auralynne-hero-copy">
           <img src="/img/0a9de795-2aa3-4b77-90eb-af8722986f81.png" alt="Logo Auralynne" className="auralynne-hero-logo" />
           <h1>Defina seus horarios</h1>
-          <p>Escolha os dias de atendimento para montar sua agenda publica.</p>
+          <p>Escolha os dias e turnos de atendimento para montar sua agenda publica.</p>
         </section>
 
         <div className="auralynne-card p-7 max-h-[90vh] overflow-y-auto">
@@ -135,32 +152,73 @@ export function AvailabilitySetup({ onNext, onBack, professionalId, token, setGl
           <div className="space-y-4">
             {schedule.map((day, index) => (
               <div key={day.day} className="p-4 bg-[var(--auralynne-soft-pink)] rounded-xl border border-[var(--auralynne-border)]">
+                {/* Day header */}
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-['Inter'] font-semibold text-[var(--auralynne-text)]">
                     {day.day}
                   </span>
                   <Toggle
                     checked={day.isOpen}
-                    onChange={(checked) => handleToggle(index, checked)}
+                    onChange={(checked) => toggleDay(index, checked)}
                     label={`Toggle ${day.day}`}
                   />
                 </div>
 
                 {day.isOpen ? (
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="time"
-                      value={day.startTime}
-                      onChange={(e) => handleTimeChange(index, 'startTime', e.target.value)}
-                      className="flex-1 h-12 rounded-[10px] bg-white border border-[var(--auralynne-border)] px-3 font-['Inter'] text-[var(--auralynne-text)] focus:outline-none focus:border-[var(--auralynne-primary)] focus:border-2"
-                    />
-                    <span className="text-[var(--auralynne-muted)] font-['Inter']">-</span>
-                    <input
-                      type="time"
-                      value={day.endTime}
-                      onChange={(e) => handleTimeChange(index, 'endTime', e.target.value)}
-                      className="flex-1 h-12 rounded-[10px] bg-white border border-[var(--auralynne-border)] px-3 font-['Inter'] text-[var(--auralynne-text)] focus:outline-none focus:border-[var(--auralynne-primary)] focus:border-2"
-                    />
+                  <div className="space-y-3">
+                    {/* Morning period */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-['Inter'] text-xs text-[var(--auralynne-muted)] w-14 shrink-0">Manhã</span>
+                      <Toggle
+                        checked={day.morning.enabled}
+                        onChange={(checked) => togglePeriod(index, 'morning', checked)}
+                        label={`Manha ${day.day}`}
+                      />
+                      {day.morning.enabled && (
+                        <>
+                          <input
+                            type="time"
+                            value={day.morning.startTime}
+                            onChange={(e) => changeTime(index, 'morning', 'startTime', e.target.value)}
+                            className="flex-1 h-10 rounded-[10px] bg-white border border-[var(--auralynne-border)] px-2 font-['Inter'] text-sm text-[var(--auralynne-text)] focus:outline-none focus:border-[var(--auralynne-primary)] focus:border-2"
+                          />
+                          <span className="text-[var(--auralynne-muted)] font-['Inter'] text-sm">-</span>
+                          <input
+                            type="time"
+                            value={day.morning.endTime}
+                            onChange={(e) => changeTime(index, 'morning', 'endTime', e.target.value)}
+                            className="flex-1 h-10 rounded-[10px] bg-white border border-[var(--auralynne-border)] px-2 font-['Inter'] text-sm text-[var(--auralynne-text)] focus:outline-none focus:border-[var(--auralynne-primary)] focus:border-2"
+                          />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Afternoon period */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-['Inter'] text-xs text-[var(--auralynne-muted)] w-14 shrink-0">Tarde</span>
+                      <Toggle
+                        checked={day.afternoon.enabled}
+                        onChange={(checked) => togglePeriod(index, 'afternoon', checked)}
+                        label={`Tarde ${day.day}`}
+                      />
+                      {day.afternoon.enabled && (
+                        <>
+                          <input
+                            type="time"
+                            value={day.afternoon.startTime}
+                            onChange={(e) => changeTime(index, 'afternoon', 'startTime', e.target.value)}
+                            className="flex-1 h-10 rounded-[10px] bg-white border border-[var(--auralynne-border)] px-2 font-['Inter'] text-sm text-[var(--auralynne-text)] focus:outline-none focus:border-[var(--auralynne-primary)] focus:border-2"
+                          />
+                          <span className="text-[var(--auralynne-muted)] font-['Inter'] text-sm">-</span>
+                          <input
+                            type="time"
+                            value={day.afternoon.endTime}
+                            onChange={(e) => changeTime(index, 'afternoon', 'endTime', e.target.value)}
+                            className="flex-1 h-10 rounded-[10px] bg-white border border-[var(--auralynne-border)] px-2 font-['Inter'] text-sm text-[var(--auralynne-text)] focus:outline-none focus:border-[var(--auralynne-primary)] focus:border-2"
+                          />
+                        </>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center text-[var(--auralynne-muted)] font-['Inter'] text-sm">
