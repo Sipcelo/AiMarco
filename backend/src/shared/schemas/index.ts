@@ -179,6 +179,15 @@ export const ProfessionalUpdateSchema = z.object({
     .optional(),
   business_type: z.enum(BUSINESS_SEGMENTS).optional(),
   phone: BrazilianPhoneSchema.optional(),
+  slug: z
+    .string()
+    .trim()
+    .min(2)
+    .max(80)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+      message: "slug deve conter apenas letras minúsculas, números e hifens.",
+    })
+    .optional(),
 });
 
 export type ProfessionalUpdate = z.infer<typeof ProfessionalUpdateSchema>;
