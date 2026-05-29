@@ -94,8 +94,8 @@ export async function createAvailabilityRules(
       }
     }
 
-    // Insert all rules with professional_id
-    const rulesToInsert = validatedRules.map(rule => ({
+    // Insert all rules with professional_id (strip is_active — column not in schema)
+    const rulesToInsert = validatedRules.map(({ is_active: _ia, ...rule }) => ({
       ...rule,
       professional_id: professionalId,
     }));
