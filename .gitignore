@@ -33,3 +33,5 @@ logs/
 venv/
 .venv/
 backend/venv/
+# Supabase CLI local cache
+backend/supabase/.temp/
