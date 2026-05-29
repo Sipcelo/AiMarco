@@ -324,8 +324,8 @@ export default function LandingPage() {
             ))}
           </ul>
 
-          <a href="/onboarding" className="lp-btn-primary" style={{ padding: '10px 22px', fontSize: '0.8rem' }}>
-            Cadastrar negócio
+          <a href="http://bit.ly/3PPiCWk" target="_blank" rel="noopener noreferrer" className="lp-btn-primary" style={{ padding: '10px 22px', fontSize: '0.8rem' }}>
+            Contate-nos
           </a>
         </div>
       </nav>
@@ -439,8 +439,8 @@ export default function LandingPage() {
           </div>
 
           <div className="lp-reveal" style={{ marginTop: 56, display: 'flex', justifyContent: 'center' }}>
-            <a href="/onboarding" className="lp-btn-primary" style={{ fontSize: '0.95rem', padding: '16px 36px' }}>
-              Cadastrar meu negócio →
+            <a href="http://bit.ly/3PPiCWk" target="_blank" rel="noopener noreferrer" className="lp-btn-primary" style={{ fontSize: '0.95rem', padding: '16px 36px' }}>
+              Contate-nos →
             </a>
           </div>
         </div>
