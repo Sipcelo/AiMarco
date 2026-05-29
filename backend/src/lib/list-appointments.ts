@@ -39,7 +39,7 @@ export async function listAppointments(
     .from('appointments')
     .select(`
       id,
-      scheduled_at,
+      scheduled_at:scheduled_start,
       status,
       service_id,
       client_id,
@@ -49,9 +49,9 @@ export async function listAppointments(
       client_phone
     `)
     .eq('professional_id', professionalId)
-    .gte('scheduled_at', startWindow)
-    .lte('scheduled_at', endWindow)
-    .order('scheduled_at', { ascending: true });
+    .gte('scheduled_start', startWindow)
+    .lte('scheduled_start', endWindow)
+    .order('scheduled_start', { ascending: true });
 
   if (apptError) throw apptError;
 
