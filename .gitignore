@@ -35,3 +35,7 @@ venv/
 backend/venv/
 # Supabase CLI local cache
 backend/supabase/.temp/
+
+# Local env files
+backend/.env
+web/.env
