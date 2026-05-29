@@ -8,14 +8,17 @@ import { describe, it, expect } from "vitest";
 
 const FIXED_NOW = new Date("2026-03-26T12:00:00Z"); // data fixa para testes
 
+function startOfUtcDay(date: Date): number {
+  return Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+}
+
 function filterRecallClients(
   appointments: Array<{ client_id: string; scheduled_at: string }>,
   daysThreshold: number = 30,
   now: Date = new Date()
 ): Array<{ client_id: string; last_appointment_at: string }> {
-  const thresholdDate = new Date(now);
-  thresholdDate.setDate(thresholdDate.getDate() - daysThreshold);
-  thresholdDate.setHours(0, 0, 0, 0); // compare dates only (midnight)
+  const thresholdMs =
+    startOfUtcDay(now) - daysThreshold * 24 * 60 * 60 * 1000;
 
   const lastPerClient = new Map<string, string>();
   appointments.forEach((a) => {
@@ -27,9 +30,8 @@ function filterRecallClients(
 
   const eligible = [];
   for (const [clientId, lastDate] of lastPerClient.entries()) {
-    const apptDate = new Date(lastDate);
-    apptDate.setHours(0, 0, 0, 0);
-    if (apptDate < thresholdDate) {
+    const apptDayMs = startOfUtcDay(new Date(lastDate));
+    if (apptDayMs < thresholdMs) {
       eligible.push({ client_id: clientId, last_appointment_at: lastDate });
     }
   }

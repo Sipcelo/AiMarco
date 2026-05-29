@@ -17,17 +17,16 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createClient } from '@supabase/supabase-js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { requireIntegrationEnv } from '../helpers/env.js';
 
-// Carregar variáveis de ambiente de teste
-const supabaseUrl = process.env.SUPABASE_URL || 'http://localhost:54321';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
+const { ok: envOk, missing: envMissing } = requireIntegrationEnv();
 
-// Client com service_role para bypass RLS (backend-style)
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = process.env.SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
-describe('Integração — GET /v1/public/professional/:slug', () => {
+const supabase = envOk ? createClient(supabaseUrl, supabaseKey) : null!;
+
+describe.skipIf(!envOk)(`Integração — GET /v1/public/professional/:slug (requer: ${envMissing.join(', ') || 'ok'})`, () => {
 
   const testProfessional = {
     display_name: 'Regina Test',

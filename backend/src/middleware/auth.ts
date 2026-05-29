@@ -48,6 +48,13 @@ async function authPlugin(fastify: FastifyInstance) {
 
     const token = authHeader.slice(7);
 
+    // Rejeitar tokens com caracteres de controle antes de chegar ao Supabase client
+    // (previne TypeError: Headers.append ... invalid header value no log)
+    if (/[\x00-\x1F\x7F]/.test(token)) {
+      reply.code(401).send({ error: "Token inválido ou expirado." });
+      return;
+    }
+
     // Validar JWT com Supabase (server-side)
     const { data: { user }, error } = await supabase.auth.getUser(token);
 
