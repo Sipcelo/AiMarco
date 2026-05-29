@@ -146,6 +146,9 @@ describe("Availability Rules — update", () => {
           };
         }
         return {
+          delete: () => ({
+            eq: () => Promise.resolve({ data: null, error: null }),
+          }),
           insert: () => ({
             select: () => Promise.resolve({ data: [savedRule], error: null }),
           }),
