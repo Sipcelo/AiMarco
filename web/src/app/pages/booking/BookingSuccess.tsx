@@ -11,13 +11,8 @@ interface BookingSuccessProps {
   professional: Professional | null
 }
 
-export function BookingSuccess({ selectedDate, selectedTime, selectedService, clientName, professional }: BookingSuccessProps) {
-  const contactHref = (() => {
-    const rawPhone = professional?.phone?.replace(/\D/g, '') || '5511999999999'
-    const phone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`
-    const message = encodeURIComponent('Ola! Quero conhecer a Auralynne para minha agenda.')
-    return `https://wa.me/${phone}?text=${message}`
-  })()
+export function BookingSuccess({ selectedDate, selectedTime, selectedService, clientName, professional: _professional }: BookingSuccessProps) {
+  const contactHref = 'http://bit.ly/3PPiCWk'
 
   const dateObj = new Date(selectedDate + 'T12:00:00')
 
