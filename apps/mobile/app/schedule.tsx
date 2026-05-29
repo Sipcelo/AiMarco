@@ -528,14 +528,26 @@ export default function ScheduleScreen() {
           {viewMode === 'day' ? `Bom dia, ${user?.display_name?.split(' ')[0] || ''}!` : `Olá, ${user?.display_name?.split(' ')[0] || ''}!`}
         </Text>
         {viewMode === 'day' && (
-          <>
-            <Text style={scheduleStyles.dateHeadline}>
-              {new Date(`${selectedDate}T12:00:00Z`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' })}
-            </Text>
-            <Text style={scheduleStyles.dateSub}>
-              {formatFullDate(selectedDate)}
-            </Text>
-          </>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+            <TouchableOpacity
+              onPress={() => setSelectedDate(addDays(selectedDate, -1))}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={{ color: '#00D2FF', fontSize: 22, fontWeight: '600' }}>‹</Text>
+            </TouchableOpacity>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={scheduleStyles.dateHeadline}>
+                {new Date(`${selectedDate}T12:00:00Z`).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', timeZone: 'America/Sao_Paulo' })}
+              </Text>
+              <Text style={scheduleStyles.dateSub}>{formatFullDate(selectedDate)}</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setSelectedDate(addDays(selectedDate, 1))}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={{ color: '#00D2FF', fontSize: 22, fontWeight: '600' }}>›</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -725,6 +737,12 @@ export default function ScheduleScreen() {
       </Portal>
     </View>
   );
+}
+
+function addDays(dateStr: string, days: number): string {
+  const d = new Date(`${dateStr}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().split('T')[0];
 }
 
 // Kept for schedule-specific date formatting used in render
