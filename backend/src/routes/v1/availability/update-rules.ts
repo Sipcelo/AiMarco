@@ -100,6 +100,18 @@ export async function createAvailabilityRules(
       professional_id: professionalId,
     }));
 
+    // Delete existing rules first so the wizard is idempotent
+    const { error: deleteError } = await supabase
+      .from('availability_rules')
+      .delete()
+      .eq('professional_id', professionalId);
+
+    if (deleteError) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Erro ao limpar regras anteriores.' }));
+      return;
+    }
+
     const { data, error } = await supabase
       .from('availability_rules')
       .insert(rulesToInsert)
