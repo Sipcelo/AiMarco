@@ -88,13 +88,13 @@
 
 ## Etapa 7: Aplicação Web (onboarding e booking público)
 
-- [ ] implementar onboarding em etapas: signup → perfil → serviços → disponibilidade → conclusão
-- [ ] implementar página pública de booking (/p/:slug): serviço → data/hora → dados → confirmação → sucesso
-- [ ] espelhar no cliente as validações de domínio (telefone, slug, slot indisponível)
-- [ ] consolidar rota pública oficial e tratar rota legada de booking (redirect ou remoção)
-- [ ] cobrir estados de loading, vazio e erro no fluxo público e de onboarding
-- [ ] npm run build
-- [ ] comentar e commitar: "feat(web): onboarding do profissional e booking público"
+- [x] implementar onboarding em etapas: signup → perfil → serviços → disponibilidade → conclusão
+- [x] implementar página pública de booking (/p/:slug): serviço → data/hora → dados → confirmação → sucesso
+- [x] espelhar no cliente as validações de domínio (telefone, slug, slot indisponível)
+- [x] consolidar rota pública oficial e tratar rota legada de booking (redirect ou remoção)
+- [x] cobrir estados de loading, vazio e erro no fluxo público e de onboarding
+- [x] npm run build
+- [x] comentar e commitar: "feat(web): onboarding do profissional e booking público"
 
 ## Etapa 8: Aplicação Mobile (operação do profissional)
 
