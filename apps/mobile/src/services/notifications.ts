@@ -23,6 +23,9 @@ export async function registerForPushNotifications(): Promise<string | null> {
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: true,
+      // SDK 55: campos obrigatórios em NotificationBehavior
+      shouldShowBanner: true,
+      shouldShowList: true,
     }),
   });
 

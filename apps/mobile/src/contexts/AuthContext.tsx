@@ -17,6 +17,25 @@ const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 // Track whether a 401-triggered signOut is already in progress (prevents re-render loops)
 let sessionInvalidationPending = false;
 
+/**
+ * Registra o push token do dispositivo e o persiste no backend.
+ * Fire-and-forget: falhas são apenas logadas, nunca exibidas como Alert
+ * (o token não deve aparecer na UI).
+ */
+async function syncPushToken(token: string, professionalId: string): Promise<void> {
+  try {
+    const pushToken = await registerForPushNotifications();
+    if (!pushToken) {
+      console.warn('[AUTH] Push token indisponível (Expo Go ou permissão negada).');
+      return;
+    }
+    await savePushToken(token, professionalId, pushToken);
+    console.log('[AUTH] Push token registrado e salvo.');
+  } catch (e) {
+    console.warn('[AUTH] Falha ao registrar/salvar push token', e);
+  }
+}
+
 interface Professional {
   id: string;
   display_name: string;
@@ -142,12 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
 
           // Registrar push token na hydration (fire-and-forget)
-          // Necessário pois signIn só roda no login explícito, não no restore de sessão
-          registerForPushNotifications()
-            .then(pushToken => {
-              if (pushToken) savePushToken(storedToken, storedUser.id, pushToken).catch(() => {});
-            })
-            .catch(() => {});
+          void syncPushToken(storedToken, storedUser.id);
         } else {
           console.log('🔑 [AUTH] No stored session found');
         }
@@ -232,11 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('--- Auth State Changed (signIn) ---', { token: newToken, loading, isOnboarded });
 
       // Registrar push token após login (fire-and-forget)
-      registerForPushNotifications()
-        .then(pushToken => {
-          if (pushToken) savePushToken(newToken, newUser.id, pushToken).catch(() => {});
-        })
-        .catch(() => {});
+      void syncPushToken(newToken, newUser.id);
 
       return true;
     } catch (error: any) {

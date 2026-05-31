@@ -59,7 +59,7 @@ export default function ProfessionalScreen() {
     getProfessionalBySlug(slug)
       .then((data) => {
         setProfessional(data);
-        if (data.services?.length > 0) {
+        if (data && data.services?.length > 0) {
           setSelectedServiceId(data.services[0].id);
         }
       })
@@ -204,7 +204,8 @@ export default function ProfessionalScreen() {
   if (loading) {
     return (
       <View style={[bookingStyles.container, bookingStyles.center]}>
-        <ActivityIndicator size="large" color="#00D2FF" />
+        <ActivityIndicator testID="loading-indicator" size="large" color="#00D2FF" />
+        <Text style={{ color: '#e9eff1', marginTop: 12 }}>Carregando profissional...</Text>
       </View>
     );
   }

@@ -38,7 +38,7 @@ export type AvailabilityRule = {
 };
 
 export const BACKEND_URL =
-  (Constants.manifest?.extra?.backendUrl as string | undefined) ||
+  (Constants.expoConfig?.extra?.backendUrl as string | undefined) ||
   process.env.BACKEND_URL ||
   'https://aimarco.up.railway.app';
 

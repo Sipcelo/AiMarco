@@ -5,7 +5,8 @@
     "paths": {
       "@backend/*": ["../../backend/src/*"]
     },
-    "types": ["jest", "react"]
+    "types": ["react"]
   },
-  "include": ["**/*", "../../backend/src/shared/schemas.ts"]
+  "include": ["**/*", "../../backend/src/shared/schemas.ts"],
+  "exclude": ["node_modules", "__tests__", "**/*.test.ts", "**/*.test.tsx"]
 }
