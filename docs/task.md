@@ -43,14 +43,14 @@
 
 ## Etapa 3: Autenticação, ownership e proteção de dados
 
-- [ ] implementar signup/login de profissionais via Supabase Auth com validação Zod
-- [ ] resolver professionalId a partir do JWT e anexar ao contexto do request
-- [ ] aplicar ownership check em todas as rotas privadas
-- [ ] implementar camada DTO separando dados públicos (sem PII) de dados do próprio profissional
-- [ ] tratar bordas de auth: token inválido/expirado, profissional não vinculado, token malformado
-- [ ] npm run build
-- [ ] npm run test:security
-- [ ] comentar e commitar: "feat(auth): autenticação, ownership e camada DTO"
+- [x] implementar signup/login de profissionais via Supabase Auth com validação Zod
+- [x] resolver professionalId a partir do JWT e anexar ao contexto do request
+- [x] aplicar ownership check em todas as rotas privadas
+- [x] implementar camada DTO separando dados públicos (sem PII) de dados do próprio profissional
+- [x] tratar bordas de auth: token inválido/expirado, profissional não vinculado, token malformado
+- [x] npm run build
+- [x] npm run test:security
+- [x] comentar e commitar: "feat(auth): autenticação, ownership e camada DTO"
 
 ## Etapa 4: Módulos de domínio do profissional
 
