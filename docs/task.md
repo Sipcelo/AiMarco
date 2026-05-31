@@ -77,14 +77,14 @@
 
 ## Etapa 6: Notificações assíncronas
 
-- [ ] gerar eventos de notificação no banco (agendamento criado, cancelado, reagendado)
-- [ ] implementar worker que escuta LISTEN new_notification com concorrência segura
-- [ ] implementar claim atômico (pending → processing → sent | failed) e reprocessamento de órfãos
-- [ ] montar mensagens por template_key e integrar envio WhatsApp registrando failure_reason
-- [ ] suportar registro de push token do mobile e entrega de avisos de novos agendamentos
-- [ ] npm run build
-- [ ] npm run test:integration
-- [ ] comentar e commitar: "feat(notifications): worker assíncrono, whatsapp e push token"
+- [x] gerar eventos de notificação no banco (agendamento criado, cancelado, reagendado)
+- [x] implementar worker que escuta LISTEN new_notification com concorrência segura
+- [x] implementar claim atômico (pending → processing → sent | failed) e reprocessamento de órfãos
+- [x] montar mensagens por template_key e integrar envio WhatsApp registrando failure_reason
+- [x] suportar registro de push token do mobile e entrega de avisos de novos agendamentos
+- [x] npm run build
+- [x] npm run test:integration
+- [x] comentar e commitar: "feat(notifications): worker assíncrono, whatsapp e push token"
 
 ## Etapa 7: Aplicação Web (onboarding e booking público)
 
