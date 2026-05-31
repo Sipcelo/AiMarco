@@ -31,15 +31,15 @@
 
 ## Etapa 2: Modelagem de dados e integridade no banco
 
-- [ ] criar tabelas: professionals, clients, services, availability_rules, blocked_slots, appointments, notifications
-- [ ] implementar RPC atômica de criação de agendamento como ponto único de gravação
-- [ ] aplicar constraints de exclusão GiST (appointments, blocked_slots, availability_rules)
-- [ ] garantir snapshots obrigatórios no appointment (serviço, duração, preço, nome, telefone)
-- [ ] padronizar timezone America/Sao_Paulo e convenção day_of_week (0–6)
-- [ ] listar migrations e definir ordem de execução (schema → migrations → seeds)
-- [ ] npm run build
-- [ ] npm run test:unit
-- [ ] comentar e commitar: "feat(db): modelo de dados, RPC atômica e constraints de overlap"
+- [x] criar tabelas: professionals, clients, services, availability_rules, blocked_slots, appointments, notifications
+- [x] implementar RPC atômica de criação de agendamento como ponto único de gravação
+- [x] aplicar constraints de exclusão GiST (appointments, blocked_slots, availability_rules)
+- [x] garantir snapshots obrigatórios no appointment (serviço, duração, preço, nome, telefone)
+- [x] padronizar timezone America/Sao_Paulo e convenção day_of_week (0–6)
+- [x] listar migrations e definir ordem de execução (schema → migrations → seeds)
+- [x] npm run build
+- [x] npm run test:unit
+- [x] comentar e commitar: "feat(db): modelo de dados, RPC atômica e constraints de overlap"
 
 ## Etapa 3: Autenticação, ownership e proteção de dados
 
