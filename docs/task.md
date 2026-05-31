@@ -54,14 +54,14 @@
 
 ## Etapa 4: Módulos de domínio do profissional
 
-- [ ] implementar leitura/edição de perfil (slug, timezone, intervalo de slot, aviso mínimo)
-- [ ] implementar CRUD de serviços (duração, preço opcional, ativo/inativo)
-- [ ] implementar regras de disponibilidade semanal com múltiplas janelas por dia
-- [ ] implementar criação e listagem de bloqueios com validação de início/fim
-- [ ] implementar cálculo de slots livres (disponibilidade − agendamentos − bloqueios − buffer)
-- [ ] npm run build
-- [ ] npm run test:unit
-- [ ] comentar e commitar: "feat(backend): perfil, serviços, disponibilidade e bloqueios"
+- [x] implementar leitura/edição de perfil (slug, timezone, intervalo de slot, aviso mínimo)
+- [x] implementar CRUD de serviços (duração, preço opcional, ativo/inativo)
+- [x] implementar regras de disponibilidade semanal com múltiplas janelas por dia
+- [x] implementar criação e listagem de bloqueios com validação de início/fim
+- [x] implementar cálculo de slots livres (disponibilidade − agendamentos − bloqueios − buffer)
+- [x] npm run build
+- [x] npm run test:unit
+- [x] comentar e commitar: "feat(backend): perfil, serviços, disponibilidade e bloqueios"
 
 ## Etapa 5: Agendamento público e ciclo de vida do appointment
 
