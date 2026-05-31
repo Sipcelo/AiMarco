@@ -9,15 +9,15 @@
 
 ## Etapa 0: Preparação e leitura de contexto
 
-- [ ] ler @docs/
-- [ ] confirmar estrutura do monorepo: backend/, web/, apps/mobile/
-- [ ] instalação limpa de dependências do backend (npm ci)
-- [ ] ignorar backend/supabase/.temp/ # ignorado (artefato temporário)
-- [ ] ignorar backend/.env # fora do git (segredo)
-- [ ] rodar verificação de segredos antes de iniciar (git ls-files + grep de secrets)
-- [ ] npm run build
-- [ ] npm run test:unit
-- [ ] comentar e commitar: "chore: preparar ambiente e validar baseline"
+- [x] ler @docs/
+- [x] confirmar estrutura do monorepo: backend/, web/, apps/mobile/
+- [x] instalação limpa de dependências do backend (npm ci)
+- [x] ignorar backend/supabase/.temp/ # ignorado (artefato temporário)
+- [x] ignorar backend/.env # fora do git (segredo)
+- [x] rodar verificação de segredos antes de iniciar (git ls-files + grep de secrets)
+- [x] npm run build
+- [x] npm run test:unit
+- [x] comentar e commitar: "chore: preparar ambiente e validar baseline"
 
 ## Etapa 1: Fundação do projeto e ambiente
 
