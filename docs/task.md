@@ -65,15 +65,15 @@
 
 ## Etapa 5: Agendamento público e ciclo de vida do appointment
 
-- [ ] expor superfície pública (perfil, serviços, disponibilidade) por slug, sem PII
-- [ ] implementar criação de agendamento guest com recálculo de disponibilidade no servidor
-- [ ] tratar corrida por slot simultâneo via RPC atômica + constraint (erro claro de indisponibilidade)
-- [ ] implementar cancelamento, reagendamento (preservando histórico) e transições de status com ownership
-- [ ] validar bordas: horário fora da disponibilidade, slot bloqueado, serviço inativo, telefone inválido
-- [ ] npm run build
-- [ ] npm run test:unit
-- [ ] npm run test:integration
-- [ ] comentar e commitar: "feat(appointments): booking público e ciclo de vida do agendamento"
+- [x] expor superfície pública (perfil, serviços, disponibilidade) por slug, sem PII
+- [x] implementar criação de agendamento guest com recálculo de disponibilidade no servidor
+- [x] tratar corrida por slot simultâneo via RPC atômica + constraint (erro claro de indisponibilidade)
+- [x] implementar cancelamento, reagendamento (preservando histórico) e transições de status com ownership
+- [x] validar bordas: horário fora da disponibilidade, slot bloqueado, serviço inativo, telefone inválido
+- [x] npm run build
+- [x] npm run test:unit
+- [x] npm run test:integration
+- [x] comentar e commitar: "feat(appointments): booking público e ciclo de vida do agendamento"
 
 ## Etapa 6: Notificações assíncronas
 
