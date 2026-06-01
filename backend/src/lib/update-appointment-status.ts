@@ -28,10 +28,6 @@ export async function updateAppointmentStatus(
     updated_at: new Date().toISOString(),
   };
 
-  if (newStatus === 'completed') {
-    updateFields.completed_at = new Date().toISOString();
-  }
-
   const { data, error: updateError } = await supabase
     .from('appointments')
     .update(updateFields)

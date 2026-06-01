@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 
 /**
  * Returns the next available booking days for a professional,
- * based on their active availability_rules.
+ * based on their availability_rules (one or more windows per weekday).
  */
 export async function getAvailableDays(
   professionalId: string,
@@ -11,8 +11,7 @@ export async function getAvailableDays(
   const { data: rules, error } = await supabase
     .from('availability_rules')
     .select('day_of_week')
-    .eq('professional_id', professionalId)
-    .eq('is_active', true);
+    .eq('professional_id', professionalId);
 
   if (error) throw error;
 

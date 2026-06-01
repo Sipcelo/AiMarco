@@ -62,6 +62,27 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
 
   const fastify = Fastify({ logger });
 
+  // Tolerate empty JSON bodies on POST/PUT (e.g. cancel appointment sends no body
+  // but the client sets Content-Type: application/json). Without this, Fastify's
+  // default parser rejects an empty body with FST_ERR_CTP_EMPTY_JSON_BODY (400).
+  fastify.addContentTypeParser(
+    "application/json",
+    { parseAs: "string" },
+    (_req, body, done) => {
+      const raw = (body as string).trim();
+      if (raw.length === 0) {
+        done(null, {});
+        return;
+      }
+      try {
+        done(null, JSON.parse(raw));
+      } catch (err) {
+        (err as any).statusCode = 400;
+        done(err as Error, undefined);
+      }
+    },
+  );
+
   await fastify.register(cors, {
     origin: (origin, cb) => {
       if (!origin || isAllowedOrigin(origin)) {
