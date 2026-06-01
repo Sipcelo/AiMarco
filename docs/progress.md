@@ -8,6 +8,24 @@
 
 ## Completed milestones
 
+### Push notifications Android — FUNCIONAL end-to-end (2026-05-31)
+
+Ciclo completo validado: booking público (`/p/regina-s-hair`) → backend → Expo Push Service → FCM V1 → **notificação exibida no celular físico** ("📅 Novo agendamento! ... às 15:30"). Confirmado no logcat (`FirebaseMessaging` ativo no processo `com.aimarco.app`, sem o erro de inicialização) e visualmente no device.
+
+#### 3 causas-raiz encontradas e corrigidas (nesta ordem)
+1. **Service account key FCM V1 ausente no EAS** — sem ela o Expo Push não entrega no Android. Configurada via `eas credentials` (Project ID `aimarco`, client email `firebase-adminsdk-fbsvc@aimarco.iam.gserviceaccount.com`). É credencial server-side do Expo, vale para builds já instalados.
+2. **Coluna `professionals.push_token` nunca existia no banco** — `update-push-token.ts` e `send-push-notification.ts` usam a coluna, mas nenhuma migration a criava → token nunca era salvo e o envio abortava em silêncio (`catch` fire-and-forget). Migration `20260531000001_add_push_token_to_professionals.sql` (commit `e44a1e5`); ALTER aplicado em produção.
+3. **`apps/mobile/android/` está no `.gitignore`** → o EAS faz **prebuild** e regenera o nativo a partir do `app.json`; sem `googleServicesFile` o `google-services.json` não entrava no APK → `Default FirebaseApp is not initialized` → `getExpoPushTokenAsync` falhava com `E_REGISTRATION_FAILED`. As edições manuais em `android/` só valiam para build local, nunca chegavam ao EAS. Corrigido (commit `a736b8d`): adicionado `android.googleServicesFile: "./google-services.json"` no `app.json` e versionado `apps/mobile/google-services.json` (config de cliente do Firebase — api_key restrita por package+SHA, não é segredo de servidor). Requereu **rebuild do APK** (`eas build -p android --profile preview`) + reinstalação.
+
+#### Arquitetura do push (referência)
+- Mobile: `getExpoPushTokenAsync({ projectId })` (`src/services/notifications.ts`) → `PUT /v1/professionals/:id/push-token` via `syncPushToken` no `AuthContext` (hidratação de sessão / login).
+- Backend: na criação do appointment, `create-appointment.ts` chama `notifyProfessionalNewAppointment` (fire-and-forget) → `POST exp.host/--/api/v2/push/send` com o `ExponentPushToken`. **Não** passa pelo worker de `notifications` — é envio direto do handler da API.
+- Vale para `/v1/appointments` e `/v1/public/appointments` (mesmo handler).
+
+#### Diagnóstico (ferramentas usadas)
+- Booking real disparado via Playwright/Chromium contra produção (appointments de teste: `f38a33c6`, `319bc7fc`, `282b9e4e`).
+- `adb logcat` no device físico revelou o erro de FirebaseApp e, após o fix, o `FirebaseMessaging` recebendo a mensagem.
+
 ### Etapa 9 — Testes, validação e estabilização para piloto (2026-05-31)
 
 #### Validação executada (evidências)

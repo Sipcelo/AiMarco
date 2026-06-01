@@ -101,7 +101,7 @@
 - [x] implementar login/signup, hidratação de sessão, logout limpo e tratamento global de 401
 - [x] implementar onboarding mobile (perfil, serviços, disponibilidade) com validação de telefone BR
 - [x] implementar agenda principal (visão do dia, navegação entre dias, métricas)
-- [x] integrar registro de push token e recebimento de notificações (FCM configurado)
+- [x] integrar registro de push token e recebimento de notificações (FCM configurado) # 2026-05-31: validado end-to-end no device físico — ver progress.md "Push notifications Android — FUNCIONAL" (fixes: key FCM V1 no EAS, coluna push_token, googleServicesFile no app.json)
 - [x] garantir limpeza de estado sensível no logout e ausência de URLs hardcoded
 - [x] verificar tipos do mobile (npx tsc --noEmit em apps/mobile) # 2026-05-31: zero erros
 - [x] comentar e commitar: "feat(mobile): sessão, onboarding, agenda e push" # código em e3ed1d4
