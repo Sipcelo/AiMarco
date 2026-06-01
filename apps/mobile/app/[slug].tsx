@@ -5,53 +5,55 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
   Alert,
-  Modal,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Share,
-  StatusBar,
+  StyleSheet,
 } from 'react-native';
-import { Surface } from 'react-native-paper';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { getProfessionalBySlug, Professional, ServiceItem, createPublicAppointment, getPublicAvailability, BACKEND_URL } from '../src/services/api';
-import { bookingStyles } from '../src/styles/booking.styles';
-import { ChevronLeft, Scissors } from 'lucide-react-native';
+import { ChevronLeft, Scissors, Share2, Mail, User, Clock } from 'lucide-react-native';
+import {
+  getProfessionalBySlug,
+  Professional,
+  ServiceItem,
+  createPublicAppointment,
+  getPublicAvailability,
+} from '../src/services/api';
 import { PhoneInput } from '../src/components/PhoneInput';
+import { BottomSheet } from '../src/components/ui/BottomSheet';
+import { Button } from '../src/components/ui/Button';
+import { TextField } from '../src/components/ui/TextField';
+import { SkeletonList } from '../src/components/schedule/SkeletonList';
+import { palette, radius, spacing, typography, shadow } from '../src/theme/tokens';
 
-// Tipos
-type TimeSlot = {
-  id: string;
-  start_time: string;
-  end_time: string;
+type TimeSlot = { id: string; start_time: string; end_time: string };
+
+const WEEKDAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+
+const BUSINESS_LABEL: Record<string, string> = {
+  barbershop: 'Barbeiro',
+  nails: 'Manicure/Pedicure',
+  hair: 'Cabelereiro',
 };
 
 export default function ProfessionalScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
 
-  // Estado principal
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Estado da seleção
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [availableTimesMap, setAvailableTimesMap] = useState<Record<string, TimeSlot[]>>({});
 
-  // Modal de agendamento
-  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showBookingSheet, setShowBookingSheet] = useState(false);
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
 
-  // ── Fetch professional data ──
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
@@ -59,17 +61,12 @@ export default function ProfessionalScreen() {
     getProfessionalBySlug(slug)
       .then((data) => {
         setProfessional(data);
-        if (data && data.services?.length > 0) {
-          setSelectedServiceId(data.services[0].id);
-        }
+        if (data && data.services?.length > 0) setSelectedServiceId(data.services[0].id);
       })
-      .catch((err) => {
-        setError(err.message || 'Erro ao buscar dados do profissional.');
-      })
+      .catch((err) => setError(err.message || 'Erro ao buscar dados do profissional.'))
       .finally(() => setLoading(false));
   }, [slug]);
 
-  // ── Generate available dates (next 14 days) ──
   useEffect(() => {
     if (!professional) return;
     const days: string[] = [];
@@ -80,64 +77,26 @@ export default function ProfessionalScreen() {
       days.push(d.toISOString().split('T')[0]);
     }
     setAvailableDates(days);
-    if (days.length > 0) {
-      setSelectedDate(days[0]);
-    }
+    if (days.length > 0) setSelectedDate(days[0]);
   }, [professional]);
 
-  // ── Fetch available times quando uma data é selecionada ──
   useEffect(() => {
     if (!professional?.slug || !selectedDate || !selectedServiceId) return;
     getPublicAvailability(professional.slug, selectedDate, selectedServiceId)
       .then((times: string[]) => {
-        const slots: TimeSlot[] = times.map(time => ({
-          id: `${selectedDate}-${time}`,
-          start_time: time,
-          end_time: time,
-        }));
-        setAvailableTimesMap(prev => ({ ...prev, [selectedDate]: slots }));
+        const slots: TimeSlot[] = times.map((time) => ({ id: `${selectedDate}-${time}`, start_time: time, end_time: time }));
+        setAvailableTimesMap((prev) => ({ ...prev, [selectedDate]: slots }));
       })
-      .catch(() => {
-        setAvailableTimesMap(prev => ({ ...prev, [selectedDate]: [] }));
-      });
+      .catch(() => setAvailableTimesMap((prev) => ({ ...prev, [selectedDate]: [] })));
   }, [professional?.slug, selectedDate, selectedServiceId]);
 
-  // ── Derived ──
-  const services = useMemo<ServiceItem[]>(
-    () => professional?.services || [],
-    [professional]
-  );
+  const services = useMemo<ServiceItem[]>(() => professional?.services || [], [professional]);
+  const selectedService = useMemo(() => services.find((s) => s.id === selectedServiceId) || services[0], [services, selectedServiceId]);
+  const availableTimes = useMemo(() => (selectedDate ? availableTimesMap[selectedDate] || [] : []), [selectedDate, availableTimesMap]);
 
-  const selectedService = useMemo(
-    () => services.find(s => s.id === selectedServiceId) || services[0],
-    [services, selectedServiceId]
-  );
-
-  const selectedDateObj = useMemo(() => {
-    if (!selectedDate) return null;
-    const d = new Date(selectedDate);
-    return {
-      full: selectedDate,
-      day: String(d.getDate()).padStart(2, '0'),
-      weekday: ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][d.getDay()],
-    };
-  }, [selectedDate]);
-
-  const availableTimes = useMemo(() => {
-    if (!selectedDate) return [];
-    return availableTimesMap[selectedDate] || [];
-  }, [selectedDate, availableTimesMap]);
-
-  // ── Handlers ──
-  const handleShare = async () => {
-    if (!professional) return;
-    const shareUrl = `https://aimarco.app/${slug}`;
-    const message = `📋 Agende com ${professional.display_name}\n\nServiços disponíveis no AiMarco!\n\nAcesse: ${shareUrl}`;
-    try {
-      await Share.share({ message, url: shareUrl });
-    } catch (err) {
-      Alert.alert('Erro', 'Não foi possível compartilhar.');
-    }
+  const formatServicePrice = (cents: number | null) => {
+    if (cents === null || cents === undefined) return 'R$ --';
+    return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
   const handleBookNow = () => {
@@ -145,7 +104,7 @@ export default function ProfessionalScreen() {
       Alert.alert('Atenção', 'Selecione serviço, data e horário.');
       return;
     }
-    setShowBookingModal(true);
+    setShowBookingSheet(true);
   };
 
   const handleBookingSubmit = async () => {
@@ -154,18 +113,10 @@ export default function ProfessionalScreen() {
       Alert.alert('Atenção', 'Preencha todos os campos.');
       return;
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(clientEmail.trim())) {
-      Alert.alert('Atenção', 'Email inválido.');
-      return;
-    }
-
+    if (!emailRegex.test(clientEmail.trim())) { Alert.alert('Atenção', 'Email inválido.'); return; }
     const phoneRegex = /^\+?55?\d{10,11}$/;
-    if (!phoneRegex.test(clientPhone.trim())) {
-      Alert.alert('Atenção', 'Telefone inválido.');
-      return;
-    }
+    if (!phoneRegex.test(clientPhone.trim())) { Alert.alert('Atenção', 'Telefone inválido.'); return; }
 
     setBookingSubmitting(true);
     try {
@@ -178,12 +129,8 @@ export default function ProfessionalScreen() {
         scheduled_date: selectedDate,
         scheduled_time: selectedTime,
       });
-      Alert.alert(
-        'Sucesso! 📋',
-        `Seu agendamento para ${selectedService.name} foi solicitado. Em breve você receberá uma confirmação!`,
-        [{ text: 'OK', onPress: () => setShowBookingModal(false) }]
-      );
-      // Reset form
+      setShowBookingSheet(false);
+      Alert.alert('Sucesso! 🎉', `Seu agendamento para ${selectedService.name} foi solicitado. Em breve você receberá uma confirmação!`);
       setClientName('');
       setClientEmail('');
       setClientPhone('');
@@ -194,241 +141,222 @@ export default function ProfessionalScreen() {
     }
   };
 
-  // ── Render helpers ──
-  const formatServicePrice = (cents: number | null) => {
-    if (cents === null || cents === undefined) return 'R$ --';
-    return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
-  };
-
-  // ── Loading state ──
   if (loading) {
     return (
-      <View style={[bookingStyles.container, bookingStyles.center]}>
-        <ActivityIndicator testID="loading-indicator" size="large" color="#00D2FF" />
-        <Text style={{ color: '#e9eff1', marginTop: 12 }}>Carregando profissional...</Text>
+      <View style={styles.loading} testID="loading-indicator">
+        <SkeletonList count={4} />
       </View>
     );
   }
 
-  // ── Error state ──
   if (error || !professional) {
     return (
-      <View style={[bookingStyles.container, bookingStyles.center]}>
-        <Text style={bookingStyles.error}>{error || 'Profissional não encontrado.'}</Text>
-        <TouchableOpacity style={bookingStyles.retryButton} onPress={() => setLoading(true)}>
-          <Text style={bookingStyles.retryText}>Tentar novamente</Text>
-        </TouchableOpacity>
+      <View style={styles.center}>
+        <Text style={styles.errorText}>{error || 'Profissional não encontrado.'}</Text>
+        <View style={{ marginTop: spacing.lg, width: 200 }}>
+          <Button label="Tentar novamente" variant="secondary" onPress={() => router.replace(`/${slug}`)} />
+        </View>
       </View>
     );
   }
 
+  const canBook = !!(selectedService && selectedDate && selectedTime);
+
   return (
-    <View style={bookingStyles.container}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={bookingStyles.header}>
-        <TouchableOpacity style={bookingStyles.backButton} onPress={() => router.back()}>
-          <ChevronLeft stroke="#FFFFFF" size={24} />
-        </TouchableOpacity>
-        <View style={bookingStyles.profileContainer}>
+      <View style={styles.header}>
+        <View style={styles.headerBar}>
+          <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()} hitSlop={8}>
+            <ChevronLeft stroke={palette.text} size={22} strokeWidth={2.4} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerBtn} onPress={() => {}} hitSlop={8}>
+            <Share2 stroke={palette.accent} size={18} strokeWidth={2.2} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.profile}>
           {professional.avatar_url ? (
-            <Image source={{ uri: professional.avatar_url }} style={bookingStyles.avatar} />
+            <Image source={{ uri: professional.avatar_url }} style={styles.avatar} />
           ) : (
-            <View style={[bookingStyles.avatar, bookingStyles.avatarPlaceholder]}>
-              <Text style={bookingStyles.avatarInitial}>
-                {professional.display_name?.charAt(0).toUpperCase() || '?'}
-              </Text>
+            <View style={[styles.avatar, styles.avatarPlaceholder]}>
+              <Text style={styles.avatarInitial}>{professional.display_name?.charAt(0).toUpperCase() || '?'}</Text>
             </View>
           )}
-          <Text style={bookingStyles.profName}>{professional.display_name}</Text>
-          <Text style={bookingStyles.profTitle}>
-            {professional.business_type === 'barbershop' ? '💈 Barbeiro' :
-             professional.business_type === 'nails' ? '💅 Manicure/Pedicure' :
-             '✂️ Cabelereiro'}
-          </Text>
+          <Text style={styles.profName}>{professional.display_name}</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{BUSINESS_LABEL[professional.business_type] || 'Profissional'}</Text>
+          </View>
         </View>
       </View>
 
-      <ScrollView style={bookingStyles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 130 }}>
         {/* Services */}
-        <View style={bookingStyles.section}>
-          <Text style={bookingStyles.sectionTitle}>Escolha o Serviço</Text>
-          {services.map(service => (
-            <TouchableOpacity
-              key={service.id}
-              activeOpacity={0.8}
-              onPress={() => setSelectedServiceId(service.id)}
-            >
-              <Surface style={[
-                bookingStyles.serviceCard,
-                selectedServiceId === service.id && bookingStyles.serviceCardSelected
-              ]} elevation={1}>
-                <View style={bookingStyles.serviceIconContainer}>
-                  <Scissors stroke={selectedServiceId === service.id ? '#00D2FF' : '#e9eff1'} size={20} />
+        <Text style={styles.sectionTitle}>Escolha o serviço</Text>
+        {services.map((service) => {
+          const selected = selectedServiceId === service.id;
+          return (
+            <TouchableOpacity key={service.id} activeOpacity={0.85} onPress={() => setSelectedServiceId(service.id)}>
+              <View style={[styles.serviceCard, selected && styles.serviceCardSelected]}>
+                <View style={[styles.serviceIcon, selected && styles.serviceIconSelected]}>
+                  <Scissors stroke={selected ? palette.accentText : palette.accent} size={18} strokeWidth={2.2} />
                 </View>
-                <View style={bookingStyles.serviceInfo}>
-                  <Text style={bookingStyles.serviceName}>{service.name}</Text>
-                  <Text style={bookingStyles.serviceDuration}>{service.duration_minutes} min</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.serviceName}>{service.name}</Text>
+                  <View style={styles.serviceMeta}>
+                    <Clock stroke={palette.textFaint} size={13} />
+                    <Text style={styles.serviceDuration}>{service.duration_minutes} min</Text>
+                  </View>
                 </View>
-                <Text style={bookingStyles.servicePrice}>{formatServicePrice(service.price_cents)}</Text>
-              </Surface>
+                <Text style={[styles.servicePrice, selected && { color: palette.accent }]}>{formatServicePrice(service.price_cents)}</Text>
+              </View>
             </TouchableOpacity>
-          ))}
-        </View>
+          );
+        })}
 
         {/* Dates */}
-        <View style={bookingStyles.section}>
-          <Text style={bookingStyles.sectionTitle}>Data</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={bookingStyles.dateScroll}>
-            {availableDates.map(date => {
-              const d = new Date(date);
-              const day = String(d.getDate()).padStart(2, '0');
-              const weekday = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'][d.getDay()];
-              return (
-                <TouchableOpacity
-                  key={date}
-                  activeOpacity={0.8}
-                  onPress={() => { setSelectedDate(date); setSelectedTime(null); }}
-                >
-                  <Surface style={[
-                    bookingStyles.dateCard,
-                    selectedDate === date && bookingStyles.dateCardSelected
-                  ]} elevation={1}>
-                    <Text style={[
-                      bookingStyles.dateWeekday,
-                      selectedDate === date && bookingStyles.textSelected
-                    ]}>{weekday}</Text>
-                    <Text style={[
-                      bookingStyles.dateDay,
-                      selectedDate === date && bookingStyles.textSelected
-                    ]}>{day}</Text>
-                  </Surface>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
+        <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>Data</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.dateScroll}>
+          {availableDates.map((date) => {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const weekday = WEEKDAYS[d.getDay()];
+            const selected = selectedDate === date;
+            return (
+              <TouchableOpacity key={date} activeOpacity={0.85} onPress={() => { setSelectedDate(date); setSelectedTime(null); }}>
+                <View style={[styles.dateCard, selected && styles.dateCardSelected]}>
+                  <Text style={[styles.dateWeekday, selected && styles.textSelected]}>{weekday}</Text>
+                  <Text style={[styles.dateDay, selected && styles.textSelected]}>{day}</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
         {/* Times */}
         {selectedDate && (
-          <View style={bookingStyles.section}>
-            <Text style={bookingStyles.sectionTitle}>Horário</Text>
-            <View style={bookingStyles.timeGrid}>
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>Horário</Text>
+            <View style={styles.timeGrid}>
               {availableTimes.length > 0 ? (
-                availableTimes.map(slot => (
-                  <TouchableOpacity
-                    key={slot.start_time}
-                    activeOpacity={0.8}
-                    onPress={() => setSelectedTime(slot.start_time)}
-                    style={[
-                      bookingStyles.timeCard,
-                      selectedTime === slot.start_time && bookingStyles.timeCardSelected
-                    ]}
-                  >
-                    <Text style={[
-                      bookingStyles.timeText,
-                      selectedTime === slot.start_time && bookingStyles.textSelected
-                    ]}>{slot.start_time}</Text>
-                  </TouchableOpacity>
-                ))
+                availableTimes.map((slot) => {
+                  const selected = selectedTime === slot.start_time;
+                  return (
+                    <TouchableOpacity
+                      key={slot.start_time}
+                      activeOpacity={0.85}
+                      onPress={() => setSelectedTime(slot.start_time)}
+                      style={[styles.timeCard, selected && styles.timeCardSelected]}
+                    >
+                      <Text style={[styles.timeText, selected && styles.textSelected]}>{slot.start_time}</Text>
+                    </TouchableOpacity>
+                  );
+                })
               ) : (
-                <Text style={bookingStyles.noTimesText}>Nenhum horário disponível para esta data.</Text>
+                <Text style={styles.noTimes}>Nenhum horário disponível para esta data.</Text>
               )}
             </View>
-          </View>
+          </>
         )}
       </ScrollView>
 
-      {/* Bottom Bar */}
-      <Surface style={bookingStyles.bottomBar}>
-        <View style={bookingStyles.summaryInfo}>
-          <Text style={bookingStyles.summaryTotal}>Total</Text>
-          <Text style={bookingStyles.summaryPrice}>
-            {selectedService ? formatServicePrice(selectedService.price_cents) : 'R$ --'}
-          </Text>
+      {/* Bottom bar */}
+      <View style={styles.bottomBar}>
+        <View>
+          <Text style={styles.summaryLabel}>Total</Text>
+          <Text style={styles.summaryPrice}>{selectedService ? formatServicePrice(selectedService.price_cents) : 'R$ --'}</Text>
         </View>
-        <TouchableOpacity
-          style={[
-            bookingStyles.bookButton,
-            (!selectedService || !selectedDate || !selectedTime) && bookingStyles.bookButtonDisabled
-          ]}
-          onPress={handleBookNow}
-          disabled={!selectedService || !selectedDate || !selectedTime}
-        >
-          <Text style={bookingStyles.bookButtonText}>Agendar agora</Text>
-        </TouchableOpacity>
-      </Surface>
+        <View style={{ flex: 1, marginLeft: spacing.lg }}>
+          <Button label="Agendar agora" onPress={handleBookNow} disabled={!canBook} />
+        </View>
+      </View>
 
-      {/* Booking Modal */}
-      <Modal
-        visible={showBookingModal}
-        animationType="slide"
-        onRequestClose={() => setShowBookingModal(false)}
-      >
-        <KeyboardAvoidingView
-          style={bookingStyles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <ScrollView contentContainerStyle={bookingStyles.modalContent}>
-            <View style={bookingStyles.modalBox}>
-              <Text style={bookingStyles.modalTitle}>
-                Agendar {selectedService?.name}
-              </Text>
-
-              <Text style={bookingStyles.modalLabel}>Seu nome *</Text>
-              <TextInput
-                style={bookingStyles.modalInput}
-                placeholder="Nome completo"
-                value={clientName}
-                onChangeText={setClientName}
-                autoCapitalize="words"
-              />
-
-              <Text style={bookingStyles.modalLabel}>Email *</Text>
-              <TextInput
-                style={bookingStyles.modalInput}
-                placeholder="seu@email.com"
-                value={clientEmail}
-                onChangeText={setClientEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              <PhoneInput
-                label="Telefone *"
-                value={clientPhone}
-                onChangeText={setClientPhone}
-                placeholder="(00) 00000-0000"
-                required
-                containerStyle={{ width: '100%' }}
-                labelStyle={{ fontSize: 14, fontWeight: '600', color: '#FFF', marginBottom: 6 }}
-                style={[bookingStyles.modalInput, { borderWidth: 1, borderColor: '#DEE2E6', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 12 }]}
-              />
-
-              <TouchableOpacity
-                style={[
-                  bookingStyles.modalConfirmButton,
-                  bookingSubmitting && bookingStyles.modalConfirmButtonDisabled
-                ]}
-                onPress={handleBookingSubmit}
-                disabled={bookingSubmitting}
-              >
-                {bookingSubmitting ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={bookingStyles.modalConfirmButtonText}>Confirmar Agendamento</Text>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={bookingStyles.modalCancelButton}
-                onPress={() => setShowBookingModal(false)}
-              >
-                <Text style={bookingStyles.modalCancelButtonText}>Cancelar</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </Modal>
+      {/* Booking sheet */}
+      <BottomSheet visible={showBookingSheet} onClose={() => setShowBookingSheet(false)} title={`Agendar ${selectedService?.name ?? ''}`}>
+        <TextField
+          label="Seu nome"
+          placeholder="Nome completo"
+          value={clientName}
+          onChangeText={setClientName}
+          autoCapitalize="words"
+          icon={<User stroke={palette.textFaint} size={18} />}
+        />
+        <TextField
+          label="Email"
+          placeholder="seu@email.com"
+          value={clientEmail}
+          onChangeText={setClientEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          icon={<Mail stroke={palette.textFaint} size={18} />}
+        />
+        <PhoneInput
+          label="Telefone"
+          value={clientPhone}
+          onChangeText={setClientPhone}
+          placeholder="(00) 00000-0000"
+          required
+          containerStyle={{ width: '100%', marginBottom: spacing.lg }}
+          labelStyle={{ ...typography.label, color: palette.textMuted, marginBottom: spacing.xs }}
+          style={styles.phoneInput}
+        />
+        <Button label="Confirmar agendamento" onPress={handleBookingSubmit} loading={bookingSubmitting} />
+      </BottomSheet>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: palette.bg },
+  loading: { flex: 1, backgroundColor: palette.bg, justifyContent: 'center', padding: spacing.xl },
+  center: { flex: 1, backgroundColor: palette.bg, justifyContent: 'center', alignItems: 'center', padding: spacing.xl },
+  errorText: { ...typography.body, color: palette.textMuted, textAlign: 'center' },
+
+  header: { backgroundColor: palette.surface, paddingTop: spacing.xxl + spacing.md, paddingBottom: spacing.xl, borderBottomLeftRadius: radius.xl, borderBottomRightRadius: radius.xl, ...shadow.card },
+  headerBar: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: spacing.lg },
+  headerBtn: { width: 40, height: 40, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.surfaceSunken },
+  profile: { alignItems: 'center', marginTop: spacing.sm },
+  avatar: { width: 76, height: 76, borderRadius: radius.pill, backgroundColor: palette.surfaceSunken },
+  avatarPlaceholder: { alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { ...typography.display, color: palette.accent },
+  profName: { ...typography.title, color: palette.text, marginTop: spacing.md },
+  badge: { backgroundColor: palette.accentSoft, paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radius.pill, marginTop: spacing.sm },
+  badgeText: { ...typography.caption, color: palette.accent, fontWeight: '700' },
+
+  content: { flex: 1, paddingHorizontal: spacing.xl, paddingTop: spacing.xl },
+  sectionTitle: { ...typography.heading, color: palette.text, marginBottom: spacing.md },
+
+  serviceCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: palette.surface, borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.sm, borderWidth: 1.5, borderColor: palette.border },
+  serviceCardSelected: { borderColor: palette.accent, backgroundColor: palette.accentSoft },
+  serviceIcon: { width: 40, height: 40, borderRadius: radius.pill, backgroundColor: palette.accentSoft, alignItems: 'center', justifyContent: 'center', marginRight: spacing.md },
+  serviceIconSelected: { backgroundColor: palette.accent },
+  serviceName: { ...typography.body, color: palette.text, fontWeight: '700', fontSize: 15 },
+  serviceMeta: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: 2 },
+  serviceDuration: { ...typography.label, color: palette.textMuted, fontWeight: '500' },
+  servicePrice: { ...typography.heading, color: palette.text },
+
+  dateScroll: { gap: spacing.sm, paddingVertical: spacing.xs },
+  dateCard: { width: 60, paddingVertical: spacing.md, borderRadius: radius.md, alignItems: 'center', backgroundColor: palette.surface, borderWidth: 1.5, borderColor: palette.border },
+  dateCardSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+  dateWeekday: { ...typography.caption, color: palette.textMuted, fontSize: 10 },
+  dateDay: { ...typography.heading, color: palette.text, marginTop: 2 },
+  textSelected: { color: palette.accentText },
+
+  timeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  timeCard: { paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderRadius: radius.sm, backgroundColor: palette.surface, borderWidth: 1.5, borderColor: palette.border },
+  timeCardSelected: { backgroundColor: palette.accent, borderColor: palette.accent },
+  timeText: { ...typography.label, color: palette.text, fontSize: 14 },
+  noTimes: { ...typography.body, color: palette.textFaint, fontStyle: 'italic' },
+
+  bottomBar: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: palette.surface,
+    paddingHorizontal: spacing.xl, paddingTop: spacing.lg, paddingBottom: spacing.xxl,
+    borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl,
+    ...shadow.sheet,
+  },
+  summaryLabel: { ...typography.caption, color: palette.textFaint },
+  summaryPrice: { ...typography.title, color: palette.text },
+
+  phoneInput: { borderWidth: 1.5, borderColor: palette.border, borderRadius: radius.md, paddingHorizontal: spacing.lg, paddingVertical: 12, fontSize: 15, color: palette.text, backgroundColor: palette.surface },
+});
