@@ -28,8 +28,11 @@
 - `git ls-files` contra padrões sensíveis: nenhum arquivo sensível trackeado
 - grep de conteúdo (service_role, postgres://, eyJ, api_key, secret…): apenas falsos positivos (campos `password` de formulário e `google-services.json` com API key pública do Firebase)
 
-#### Pendência conhecida (não bloqueante para esta etapa)
-- Smoke E2E do booking público em navegador: build e roteamento validados; execução em navegador real (Playwright) pendente de rodada manual — não há harness de browser neste ambiente
+#### Smoke E2E do booking público (navegador) — 2026-05-31
+- Executado com Playwright/Chromium (`web/e2e/booking.spec.ts`) via vite dev (porta 5173) apontando para o backend de produção (Railway) — CORS de `localhost` já permitido
+- **6/6 testes passaram**: carrega identidade da profissional, lista serviços, seleciona serviço → avança para data/hora, preenche dados do cliente (REVISAR habilitado), e rotas demo `/example-s` e `/example-m`
+- Spec estabilizada: asserts alinhados aos dados reais ("Corte Feminino") e resilientes a drift de preço (regex `R$`); removidas asserções defasadas ("Escova", "R$ 60,00")
+- Observação: `web/e2e/booking-production.spec.ts` cria agendamento real em produção com datas hardcoded defasadas — fora do smoke; usar apenas em rodada manual controlada
 
 ---
 

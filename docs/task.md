@@ -109,7 +109,7 @@
 ## Etapa 9: Testes, validação e estabilização para piloto
 
 - [x] cobrir backend com testes unitários, de domínio, de concorrência, de integração e de segurança # 205 unit + 53 security + 79 integration (2 skipped)
-- [~] executar smoke E2E do fluxo público de booking na web # web build OK (vite, 0 erros) e roteamento /p/:slug validado; E2E em navegador pendente de execução manual (sem harness de browser neste ambiente)
+- [x] executar smoke E2E do fluxo público de booking na web # 2026-05-31: Playwright/Chromium contra backend de produção — 6/6 passaram (identidade, serviços, seleção→data/hora, dados do cliente, demos)
 - [x] validar fluxos críticos do mobile (login, logout, sessão, push, agenda) # tsc --noEmit 0 erros + jest 13 testes (fix transformIgnorePatterns)
 - [x] resolver débito técnico: rota de booking duplicada e artefatos de teste soltos no repositório # rota legada /booking/:slug já redireciona p/ /p/:slug; removido tests/integration/test-race-condition.ts
 - [x] rodar verificação de segredos antes de declarar o V1 pronto # git ls-files + grep de conteúdo: sem segredos reais (só falsos positivos)
@@ -117,4 +117,4 @@
 - [x] npm run test:unit # 205 passed
 - [x] npm run test:security # 53 passed
 - [x] npm run test:integration # 79 passed | 2 skipped
-- [ ] comentar e commitar: "test: estabilização final e validação para piloto V1"
+- [x] comentar e commitar: "test: estabilização final e validação para piloto V1" # 573b1e6 (estabilização) + smoke E2E green
