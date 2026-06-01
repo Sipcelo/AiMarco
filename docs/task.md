@@ -103,8 +103,8 @@
 - [x] implementar agenda principal (visão do dia, navegação entre dias, métricas)
 - [x] integrar registro de push token e recebimento de notificações (FCM configurado)
 - [x] garantir limpeza de estado sensível no logout e ausência de URLs hardcoded
-- [ ] verificar tipos do mobile (npx tsc --noEmit em apps/mobile)
-- [ ] comentar e commitar: "feat(mobile): sessão, onboarding, agenda e push"
+- [x] verificar tipos do mobile (npx tsc --noEmit em apps/mobile) # 2026-05-31: zero erros
+- [x] comentar e commitar: "feat(mobile): sessão, onboarding, agenda e push" # código em e3ed1d4
 
 ## Etapa 9: Testes, validação e estabilização para piloto
 
