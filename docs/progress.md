@@ -1,12 +1,49 @@
 # AiMarco - progress.md
 
-## Last updated: 2026-04-02
+## Last updated: 2026-05-31
 
-## Current phase: Phase 9 — Refinement (in progress)
+## Current phase: Etapa 8 — Mobile (em progresso)
 
 ---
 
 ## Completed milestones
+
+### Etapa 8 — Mobile (2026-05-29 a 2026-05-31)
+
+#### Bugs corrigidos
+- `list-appointments.ts`: coluna `scheduled_at` renomeada para `scheduled_start` (migration 20260323000006) — corrigido usando alias PostgREST `scheduled_at:scheduled_start`
+- Trigger `check_appointment_block_overlap()`: referenciava `NEW.scheduled_at` inexistente — recriado em `20260529000001_fix_appointment_trigger_column.sql` com `NEW.scheduled_start`
+- RPC `create_appointment_v1`: não populava colunas snapshot (`service_name`, `service_duration_minutes`, `client_name`, `client_phone`) — corrigido em `rpc_updates.sql` e migration 20260529000001
+
+#### Disponibilidade multi-janela + buffer (2026-05-29)
+- Migration `20260529000002_availability_multiwindow_buffer.sql`: reescreveu `get_available_slots_v1`
+  - Itera sobre `availability_rules` (suporta manhã + tarde por dia)
+  - Gera slots a cada 30 minutos
+  - Buffer de 30 min após cada agendamento confirmado
+  - Timezone correto: `AT TIME ZONE 'America/Sao_Paulo'`
+- Onboarding web `AvailabilitySetup.tsx`: suporta duas janelas por dia (Manhã/Tarde) com toggles independentes
+  - Default: Seg–Sáb habilitados, 08:00–11:00 e 14:00–18:00; Domingo fechado
+- Regras da profissional demo `regina-s-hair` atualizadas: Seg–Sáb × (08:00–11:00 e 14:00–18:00)
+
+#### Agenda mobile — navegação de datas (2026-05-31)
+- `apps/mobile/app/schedule.tsx`: adicionado helper `addDays()` e setas `‹`/`›` no header da data
+- `setSelectedDate` agora é chamado — profissional pode navegar entre dias e ver agendamentos futuros
+
+#### Push notifications — FCM (2026-05-31)
+- `android/app/google-services.json`: Firebase project configurado para `com.aimarco.app`
+- `android/build.gradle`: classpath `com.google.gms:google-services:4.4.2` adicionado
+- `android/app/build.gradle`: plugin `com.google.gms.google-services` aplicado
+- `notifications.ts`: campos obrigatórios SDK 55 adicionados (`shouldShowBanner`, `shouldShowList`)
+- `AuthContext.tsx`: helper `syncPushToken()` extrai lógica de registro de token — limpo, sem Alerts de debug, fire-and-forget via `void`
+- Telas de onboarding legadas removidas (`OnboardingNavigator`, `WelcomeProfile`, `Services`, `ScheduleWizard`)
+
+#### Builds EAS (preview APK)
+- `b360e956` — 2026-05-29: primeiro APK com fixes de backend
+- `36514bde` — 2026-05-31: APK com FCM configurado
+- `0ac64142` — 2026-05-31: APK com debug push token (Alerts temporários)
+- APK atual: sendo gerado com código limpo
+
+
 
 ### Phase 0 — Foundation
 - Docker environment configured (WSL2/Windows)

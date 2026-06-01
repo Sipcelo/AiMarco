@@ -98,11 +98,11 @@
 
 ## Etapa 8: Aplicação Mobile (operação do profissional)
 
-- [ ] implementar login/signup, hidratação de sessão, logout limpo e tratamento global de 401
-- [ ] implementar onboarding mobile (perfil, serviços, disponibilidade) com validação de telefone BR
-- [ ] implementar agenda principal (visão do dia, navegação entre dias, métricas)
-- [ ] integrar registro de push token e recebimento de notificações
-- [ ] garantir limpeza de estado sensível no logout e ausência de URLs hardcoded
+- [x] implementar login/signup, hidratação de sessão, logout limpo e tratamento global de 401
+- [x] implementar onboarding mobile (perfil, serviços, disponibilidade) com validação de telefone BR
+- [x] implementar agenda principal (visão do dia, navegação entre dias, métricas)
+- [x] integrar registro de push token e recebimento de notificações (FCM configurado)
+- [x] garantir limpeza de estado sensível no logout e ausência de URLs hardcoded
 - [ ] verificar tipos do mobile (npx tsc --noEmit em apps/mobile)
 - [ ] comentar e commitar: "feat(mobile): sessão, onboarding, agenda e push"
 
