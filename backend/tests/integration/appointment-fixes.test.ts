@@ -166,4 +166,45 @@ describe("POST /v1/appointments/:id/cancel with empty JSON body", () => {
       await app.close();
     }
   });
+
+  it("surfaces the real DB error (code + message) instead of a generic 500", async () => {
+    vi.spyOn(supabase.auth, "getUser").mockResolvedValue({
+      data: { user: { id: USER_ID } } as any,
+      error: null,
+    });
+    vi.spyOn(supabase, "from").mockImplementation((table: string) => {
+      if (table === "professionals") {
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { id: PROF_ID }, error: null }) }) }),
+        } as any;
+      }
+      if (table === "appointments") {
+        return {
+          select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { professional_id: PROF_ID }, error: null }) }) }),
+        } as any;
+      }
+      return {} as any;
+    });
+    // Simulate an unexpected Postgres error bubbling up from the RPC.
+    const dbErr: any = new Error('column "scheduled_at" does not exist');
+    dbErr.code = "42703";
+    vi.mocked(cancelAppointment).mockRejectedValue(dbErr);
+
+    const app = await buildApp({ logger: false, serveStatic: false });
+    try {
+      const res = await app.inject({
+        method: "POST",
+        url: `/v1/appointments/${APPT_ID}/cancel`,
+        headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      });
+
+      expect(res.statusCode).toBe(500);
+      const body = res.json();
+      expect(body.error).toContain("scheduled_at");
+      expect(body.error).not.toBe("Erro interno no servidor.");
+      expect(body.code).toBe("42703");
+    } finally {
+      await app.close();
+    }
+  });
 });

@@ -63,8 +63,15 @@ export async function updateStatusHandler(
         res.end(JSON.stringify({ error: err.message }));
         return;
       }
+      console.error('[update-status] erro inesperado:', {
+        message: err?.message, code: err?.code, details: err?.details, hint: err?.hint,
+      });
+      const diag = [err?.message, err?.code && `(${err.code})`].filter(Boolean).join(' ');
       res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Erro interno no servidor.' }));
+      res.end(JSON.stringify({
+        error: diag ? `Erro ao atualizar status: ${diag}` : 'Erro interno no servidor.',
+        code: err?.code,
+      }));
     }
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'application/json' });

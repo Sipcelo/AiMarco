@@ -54,8 +54,16 @@ export async function rescheduleAppointment(
       });
 
       if (error) {
+        console.error('[reschedule] erro de RPC:', {
+          message: (error as any)?.message, code: (error as any)?.code,
+          details: (error as any)?.details, hint: (error as any)?.hint,
+        });
+        const diag = [(error as any)?.message, (error as any)?.code && `(${(error as any).code})`].filter(Boolean).join(' ');
         res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Erro interno no servidor.' }));
+        res.end(JSON.stringify({
+          error: diag ? `Erro ao reagendar: ${diag}` : 'Erro interno no servidor.',
+          code: (error as any)?.code,
+        }));
       } else if (data && data.error) {
         res.writeHead(409, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: data.error }));

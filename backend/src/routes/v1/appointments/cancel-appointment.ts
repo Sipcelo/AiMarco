@@ -48,7 +48,19 @@ export async function cancelAppointmentHandler(
       res.end(JSON.stringify({ error: err.message }));
       return;
     }
+    // Erro inesperado (ex.: falha de RPC/coluna no banco). Logar o detalhe completo
+    // no servidor e devolver um diagnóstico seguro (sem PII) para acelerar a correção.
+    console.error('[cancel] erro inesperado ao cancelar agendamento:', {
+      message: err?.message,
+      code: err?.code,
+      details: err?.details,
+      hint: err?.hint,
+    });
+    const diag = [err?.message, err?.code && `(${err.code})`].filter(Boolean).join(' ');
     res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Erro interno no servidor.' }));
+    res.end(JSON.stringify({
+      error: diag ? `Erro ao cancelar: ${diag}` : 'Erro interno no servidor.',
+      code: err?.code,
+    }));
   }
 }
