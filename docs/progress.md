@@ -8,6 +8,47 @@
 
 ## Completed milestones
 
+### Redesign mobile — Light Premium em todas as telas (2026-05-31)
+
+Nova linguagem visual "Light Premium" aplicada ao app inteiro (fundo claro `#F6F7FB`,
+cards brancos com sombra suave, acento indigo `#4F46E5`, tipografia/raios/espaçamento
+consistentes). Migração de `react-native-paper`/tema dark para componentes próprios.
+Sem novas dependências nativas — usa `Animated`/`Modal` do RN.
+
+#### Design system mobile (novo)
+- `src/theme/tokens.ts`: paleta, espaçamento, raios, sombras, tipografia e `STATUS_META`
+- Componentes UI reutilizáveis:
+  - `ui/Button.tsx` — press-scale animado, variantes (primary/secondary/ghost), loading
+  - `ui/TextField.tsx` — label, ícone, erro inline, toggle de senha
+  - `ui/BottomSheet.tsx` — sheet (Modal + Animated), arrastar para fechar + backdrop
+  - `schedule/AppointmentCard.tsx` e `MetricCard.tsx` — entrada animada + press-scale
+  - `schedule/SkeletonList.tsx` — placeholders com shimmer
+  - `schedule/EmptyState.tsx` — vazio desenhado (halo pulsante + CTA)
+  - `onboarding/OnboardingProgress.tsx` — indicador de etapas
+
+#### Telas migradas (commits)
+- **Agenda principal** (`app/schedule.tsx`, `a3cb506`): skeletons no loading, empty state,
+  **sheet de ações** que ativou concluir/não-compareceu/cancelar (antes sem gatilho na UI);
+  bloqueio e reagendamento migrados de Paper Dialog → BottomSheet. Estilos em `agenda.styles.ts`
+  (isolado, sem quebrar o wizard).
+- **Login/Signup** (`fe500eb`): primitivas Button/TextField, KeyboardAvoiding, entrada animada;
+  signup com tipo de negócio em cards com ícone.
+- **Onboarding** (`6641e97`): welcome-profile (1/3), services (2/3), schedule-wizard (3/3) com
+  `OnboardingProgress`, Switch nativo e form em cards.
+- **Booking público** (`app/[slug].tsx`, `1094214`): header com avatar/badge, cards selecionáveis,
+  scroll de datas, grid de horários, barra inferior com total + CTA; formulário em BottomSheet.
+
+#### Validação
+- `tsc --noEmit`: 0 erros em todos os batches
+- `jest`: 13/13 (inclui `slug-screen`, com `testID="loading-indicator"` preservado)
+- Comportamento/handlers preservados (auth, AsyncStorage, completeOnboarding, createPublicAppointment)
+
+#### Notas
+- `src/styles/schedule.styles.ts` e `src/styles/booking.styles.ts` ficaram órfãos (não mais
+  importados) — candidatos a remoção em limpeza futura.
+- Sem deps nativas novas: para ver no device, usar dev client (`eas build --profile development`
+  + `expo start --dev-client`) ou rebuild `preview`.
+
 ### Push notifications Android — FUNCIONAL end-to-end (2026-05-31)
 
 Ciclo completo validado: booking público (`/p/regina-s-hair`) → backend → Expo Push Service → FCM V1 → **notificação exibida no celular físico** ("📅 Novo agendamento! ... às 15:30"). Confirmado no logcat (`FirebaseMessaging` ativo no processo `com.aimarco.app`, sem o erro de inicialização) e visualmente no device.
