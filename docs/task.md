@@ -108,13 +108,13 @@
 
 ## Etapa 9: Testes, validação e estabilização para piloto
 
-- [ ] cobrir backend com testes unitários, de domínio, de concorrência, de integração e de segurança
-- [ ] executar smoke E2E do fluxo público de booking na web
-- [ ] validar fluxos críticos do mobile (login, logout, sessão, push, agenda)
-- [ ] resolver débito técnico: rota de booking duplicada e artefatos de teste soltos no repositório
-- [ ] rodar verificação de segredos antes de declarar o V1 pronto
-- [ ] npm run build
-- [ ] npm run test:unit
-- [ ] npm run test:security
-- [ ] npm run test:integration
+- [x] cobrir backend com testes unitários, de domínio, de concorrência, de integração e de segurança # 205 unit + 53 security + 79 integration (2 skipped)
+- [~] executar smoke E2E do fluxo público de booking na web # web build OK (vite, 0 erros) e roteamento /p/:slug validado; E2E em navegador pendente de execução manual (sem harness de browser neste ambiente)
+- [x] validar fluxos críticos do mobile (login, logout, sessão, push, agenda) # tsc --noEmit 0 erros + jest 13 testes (fix transformIgnorePatterns)
+- [x] resolver débito técnico: rota de booking duplicada e artefatos de teste soltos no repositório # rota legada /booking/:slug já redireciona p/ /p/:slug; removido tests/integration/test-race-condition.ts
+- [x] rodar verificação de segredos antes de declarar o V1 pronto # git ls-files + grep de conteúdo: sem segredos reais (só falsos positivos)
+- [x] npm run build # backend tsc 0 erros + web vite build OK
+- [x] npm run test:unit # 205 passed
+- [x] npm run test:security # 53 passed
+- [x] npm run test:integration # 79 passed | 2 skipped
 - [ ] comentar e commitar: "test: estabilização final e validação para piloto V1"

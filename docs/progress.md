@@ -2,7 +2,34 @@
 
 ## Last updated: 2026-05-31
 
-## Current phase: Etapa 8 — Mobile (em progresso)
+## Current phase: Etapa 9 — Estabilização para piloto (validada)
+
+---
+
+## Completed milestones
+
+### Etapa 9 — Testes, validação e estabilização para piloto (2026-05-31)
+
+#### Validação executada (evidências)
+- `backend` build (tsc): 0 erros
+- `backend` test:unit: **205 passed** (11 arquivos — unit + domain + concurrency)
+- `backend` test:security: **53 passed** (4 arquivos — security + auth)
+- `backend` test:integration: **79 passed | 2 skipped** (9 arquivos, 1 skipped)
+- `web` build (vite): OK, 0 erros (2039 módulos)
+- `apps/mobile` tsc --noEmit: 0 erros
+- `apps/mobile` jest: **13 passed** (2 suítes)
+
+#### Débito técnico resolvido
+- Rota de booking duplicada: rota legada `/booking/:slug` já redireciona para a oficial `/p/:slug` (`web/src/app/Router.tsx`) — sem UI duplicada
+- Artefato de teste solto removido: `backend/tests/integration/test-race-condition.ts` (script TDD red-phase órfão, fora do `include` do vitest, sem referências)
+- Jest mobile: `transformIgnorePatterns` ajustado para transpilar `lucide-react-native` e `react-native-reanimated` (suíte `slug-screen` estava quebrando por ESM não transpilado)
+
+#### Segurança
+- `git ls-files` contra padrões sensíveis: nenhum arquivo sensível trackeado
+- grep de conteúdo (service_role, postgres://, eyJ, api_key, secret…): apenas falsos positivos (campos `password` de formulário e `google-services.json` com API key pública do Firebase)
+
+#### Pendência conhecida (não bloqueante para esta etapa)
+- Smoke E2E do booking público em navegador: build e roteamento validados; execução em navegador real (Playwright) pendente de rodada manual — não há harness de browser neste ambiente
 
 ---
 
