@@ -12,6 +12,7 @@ import {
   Platform,
   Image,
   TextInput,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -25,6 +26,7 @@ import {
   RotateCcw,
   Ban,
   UserX,
+  MessageCircle,
 } from 'lucide-react-native';
 import { useAuth } from '../src/contexts/AuthContext';
 import {
@@ -205,6 +207,21 @@ export default function ScheduleScreen() {
     setActionsVisible(true);
   }
 
+  // Abre a conversa do cliente no WhatsApp (wa.me aceita só dígitos, sem '+').
+  async function openWhatsApp(phone?: string) {
+    const digits = (phone || '').replace(/\D/g, '');
+    if (!digits) {
+      Alert.alert('Sem telefone', 'Este agendamento não tem telefone do cliente.');
+      return;
+    }
+    const url = `https://wa.me/${digits}`;
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+    }
+  }
+
   async function performStatus(id: string, newStatus: 'completed' | 'no_show') {
     setActionsVisible(false);
     Vibration.vibrate(20);
@@ -296,6 +313,7 @@ export default function ScheduleScreen() {
       time: formatTime(a.scheduled_at),
       client: a.client_name || 'Cliente',
       service: a.service_name || 'Serviço',
+      phone: a.client_phone,
     }))
     .sort((a, b) => a.time.localeCompare(b.time));
 
@@ -423,6 +441,20 @@ export default function ScheduleScreen() {
           <View>
             <Text style={s.sheetClientName}>{actionItem.client}</Text>
             <Text style={s.sheetClientMeta}>{actionItem.service} · {actionItem.time}</Text>
+
+            {actionItem.phone ? (
+              <View style={s.contactBlock}>
+                <Text style={s.contactPhone} selectable>{actionItem.phone}</Text>
+                <Pressable
+                  style={s.whatsappBtn}
+                  onPress={() => openWhatsApp(actionItem.phone)}
+                  android_ripple={{ color: 'rgba(255,255,255,0.25)' }}
+                >
+                  <MessageCircle stroke="#ffffff" size={18} strokeWidth={2.4} />
+                  <Text style={s.whatsappBtnText}>Chamar no WhatsApp</Text>
+                </Pressable>
+              </View>
+            ) : null}
 
             {actionItem.status_raw === 'confirmed' ? (
               <>

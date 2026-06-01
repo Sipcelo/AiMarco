@@ -10,6 +10,7 @@ export interface AgendaItem {
   time: string;
   client: string;
   service: string;
+  phone?: string;
 }
 
 interface AppointmentCardProps {

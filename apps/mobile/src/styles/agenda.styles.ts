@@ -98,7 +98,22 @@ export const agendaStyles = StyleSheet.create({
 
   // Bottom sheet — action rows
   sheetClientName: { ...typography.title, color: palette.text },
-  sheetClientMeta: { ...typography.body, color: palette.textMuted, marginTop: 2, marginBottom: spacing.lg },
+  sheetClientMeta: { ...typography.body, color: palette.textMuted, marginTop: 2, marginBottom: spacing.md },
+
+  // Bottom sheet — contato do cliente (telefone + WhatsApp)
+  contactBlock: { marginBottom: spacing.lg },
+  contactPhone: { ...typography.body, color: palette.text, fontWeight: '600', marginBottom: spacing.sm },
+  whatsappBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: '#25D366',
+    borderRadius: radius.md,
+    paddingVertical: 12,
+  },
+  whatsappBtnText: { ...typography.label, color: '#ffffff', fontSize: 15 },
+
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
