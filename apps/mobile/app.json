@@ -10,7 +10,8 @@
       "**/*"
     ],
     "android": {
-      "package": "com.aimarco.app"
+      "package": "com.aimarco.app",
+      "googleServicesFile": "./google-services.json"
     },
     "extra": {
       "apiUrl": "https://aimarco.up.railway.app",
