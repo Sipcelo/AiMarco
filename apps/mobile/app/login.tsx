@@ -1,30 +1,44 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { TextInput, Button, Text } from 'react-native-paper';
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
+import { Mail, Lock, CalendarCheck } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/contexts/AuthContext';
+import { TextField } from '../src/components/ui/TextField';
+import { Button } from '../src/components/ui/Button';
+import { palette, radius, spacing, typography, shadow } from '../src/theme/tokens';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const { signIn } = useAuth();
+
+  const enter = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(enter, { toValue: 1, duration: 420, useNativeDriver: true }).start();
+  }, [enter]);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert('Campos obrigatórios', 'Preencha email e senha.');
       return;
     }
-
     setLoading(true);
     try {
       const normalizedEmail = email.trim().toLowerCase();
-      console.log('Tentando Login com:', normalizedEmail);
       const success = await signIn(normalizedEmail, password);
       if (!success) setLoading(false);
-      // Se success, AuthContext atualiza estado e AuthGuard redireciona
     } catch (error: any) {
       Alert.alert('Erro', error.message || 'Falha no login');
     } finally {
@@ -33,93 +47,69 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text variant="headlineLarge" style={styles.title}>Entrar</Text>
-      <Text variant="bodyLarge" style={styles.subtitle}>Acesse sua conta profissional</Text>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Animated.View
+          style={{ opacity: enter, transform: [{ translateY: enter.interpolate({ inputRange: [0, 1], outputRange: [18, 0] }) }] }}
+        >
+          <View style={styles.brand}>
+            <View style={styles.logo}>
+              <CalendarCheck stroke={palette.accent} size={28} strokeWidth={2.4} />
+            </View>
+            <Text style={styles.title}>Bem-vindo de volta</Text>
+            <Text style={styles.subtitle}>Acesse sua conta profissional</Text>
+          </View>
 
-      <TextInput
-        label="Email"
-        mode="outlined"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        left={<TextInput.Icon icon="email-outline" />}
-        style={styles.input}
-      />
-
-      <TextInput
-        label="Senha"
-        mode="outlined"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry={!showPassword}
-        left={<TextInput.Icon icon="lock-outline" />}
-        right={
-          <TextInput.Icon
-            icon={showPassword ? 'eye-off-outline' : 'eye-outline'}
-            onPress={() => setShowPassword(!showPassword)}
+          <TextField
+            label="Email"
+            placeholder="voce@email.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            icon={<Mail stroke={palette.textFaint} size={18} />}
           />
-        }
-        style={styles.input}
-      />
 
-      <Button
-        mode="contained"
-        onPress={handleLogin}
-        loading={loading}
-        disabled={loading}
-        style={styles.button}
-        contentStyle={styles.buttonContent}
-        labelStyle={styles.buttonLabel}
-      >
-        Entrar
-      </Button>
+          <TextField
+            label="Senha"
+            placeholder="Sua senha"
+            value={password}
+            onChangeText={setPassword}
+            secure
+            icon={<Lock stroke={palette.textFaint} size={18} />}
+          />
 
-      <TouchableOpacity onPress={() => router.push('/signup')}>
-        <Text style={styles.link}>Não tem conta? Cadastre-se</Text>
-      </TouchableOpacity>
-    </View>
+          <View style={{ marginTop: spacing.sm }}>
+            <Button label="Entrar" onPress={handleLogin} loading={loading} />
+          </View>
+
+          <TouchableOpacity onPress={() => router.push('/signup')} style={styles.linkWrap} hitSlop={8}>
+            <Text style={styles.link}>Não tem conta? <Text style={styles.linkStrong}>Cadastre-se</Text></Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
+  container: { flex: 1, backgroundColor: palette.bg },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: spacing.xl },
+  brand: { alignItems: 'center', marginBottom: spacing.xxl },
+  logo: {
+    width: 64,
+    height: 64,
+    borderRadius: radius.lg,
+    backgroundColor: palette.surface,
+    alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    marginBottom: spacing.lg,
+    ...shadow.card,
   },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 4,
-    color: '#111',
-  },
-  subtitle: {
-    color: '#666',
-    marginBottom: 32,
-  },
-  input: {
-    marginBottom: 16,
-    backgroundColor: '#fff',
-  },
-  button: {
-    borderRadius: 10,
-    marginTop: 8,
-    marginBottom: 4,
-  },
-  buttonContent: {
-    paddingVertical: 6,
-  },
-  buttonLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  link: {
-    color: '#007AFF',
-    fontSize: 14,
-    marginTop: 16,
-    textAlign: 'center',
-  },
+  title: { ...typography.display, color: palette.text, textAlign: 'center' },
+  subtitle: { ...typography.body, color: palette.textMuted, marginTop: spacing.xs, textAlign: 'center' },
+  linkWrap: { marginTop: spacing.xl, alignItems: 'center' },
+  link: { ...typography.body, color: palette.textMuted },
+  linkStrong: { color: palette.accent, fontWeight: '700' },
 });
