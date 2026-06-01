@@ -25,6 +25,9 @@ export async function getAvailabilityHandler(req: IncomingMessage, res: ServerRe
       res.end(JSON.stringify({ error: err.message }));
       return;
     }
+    console.error('[get-availability] erro inesperado:', {
+      message: err?.message, code: err?.code, details: err?.details, hint: err?.hint,
+    });
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Erro interno no servidor.' }));
   }

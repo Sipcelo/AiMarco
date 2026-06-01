@@ -3,6 +3,22 @@ import { calculateAvailability } from './calculate-availability.js';
 import type { OccupiedSlot, TimeInterval } from './calculate-availability.js';
 
 /**
+ * Parses a PostgreSQL tstzrange string (e.g. `["2026-06-01 12:00:00+00","2026-06-01 13:00:00+00")`)
+ * into absolute millisecond bounds. Returns null when the range cannot be parsed.
+ */
+function parseTstzRange(range: string | null): { start: number; end: number } | null {
+  if (!range || range.length < 3) return null;
+  const inner = range.slice(1, -1); // strip the bound chars [ ] ( )
+  const comma = inner.indexOf(',');
+  if (comma === -1) return null;
+  const clean = (s: string) => s.trim().replace(/^"|"$/g, '');
+  const start = new Date(clean(inner.slice(0, comma))).getTime();
+  const end = new Date(clean(inner.slice(comma + 1))).getTime();
+  if (Number.isNaN(start) || Number.isNaN(end)) return null;
+  return { start, end };
+}
+
+/**
  * Fetches data from Supabase and calculates available slots for a given professional, service and date.
  */
 export async function getAvailability(
@@ -58,34 +74,36 @@ export async function getAvailability(
     end: r.end_time.substring(0, 5),
   }));
 
-  // 3. Fetch blocked slots with overlap logic (using absolute windows)
+  // 3. Fetch blocked slots. The column is `time_range` (tstzrange) — `starts_at`/`ends_at`
+  //    were dropped in 20260324120000_mfa_blocked_slots.sql. Fetch the professional's blocks
+  //    and keep only those overlapping the requested business day.
   const { data: blocked, error: blockedError } = await supabase
     .from('blocked_slots')
-    .select('starts_at, ends_at')
-    .eq('professional_id', professionalId)
-    .lt('starts_at', endWindow)
-    .gt('ends_at', startWindow);
+    .select('time_range')
+    .eq('professional_id', professionalId);
 
   if (blockedError) throw blockedError;
 
-  const blockedSlots: OccupiedSlot[] = (blocked || []).map((b) => {
-    const bStart = new Date(b.starts_at).getTime();
-    const bEnd = new Date(b.ends_at).getTime();
-    const wStart = windowStartTimestamp;
-    const wEnd = new Date(endWindow).getTime();
+  const wStart = windowStartTimestamp;
+  const wEnd = new Date(endWindow).getTime();
 
-    const actualStart = Math.max(bStart, wStart);
-    const actualEnd = Math.min(bEnd, wEnd);
+  const blockedSlots: OccupiedSlot[] = (blocked || [])
+    .map((b: any) => parseTstzRange(b.time_range))
+    .filter((r): r is { start: number; end: number } => r !== null)
+    .filter((r) => r.start < wEnd && r.end > wStart) // overlaps the requested day
+    .map(({ start, end }) => {
+      const actualStart = Math.max(start, wStart);
+      const actualEnd = Math.min(end, wEnd);
 
-    // Calculate minutes from the start of the business day in the local timezone
-    const startMinutes = Math.floor((actualStart - wStart) / 60000);
-    const duration = Math.floor((actualEnd - actualStart) / 60000);
+      // Minutes from the start of the business day in the local timezone
+      const startMinutes = Math.floor((actualStart - wStart) / 60000);
+      const duration = Math.floor((actualEnd - actualStart) / 60000);
 
-    const h = Math.floor(startMinutes / 60).toString().padStart(2, '0');
-    const m = (startMinutes % 60).toString().padStart(2, '0');
+      const h = Math.floor(startMinutes / 60).toString().padStart(2, '0');
+      const m = (startMinutes % 60).toString().padStart(2, '0');
 
-    return { start: `${h}:${m}`, duration };
-  });
+      return { start: `${h}:${m}`, duration };
+    });
 
   // 4. Fetch confirmed appointments (using absolute windows)
   const { data: appts, error: apptError } = await supabase
