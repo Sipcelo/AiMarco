@@ -118,3 +118,82 @@
 - [x] npm run test:security # 53 passed
 - [x] npm run test:integration # 79 passed | 2 skipped
 - [x] comentar e commitar: "test: estabilização final e validação para piloto V1" # 573b1e6 (estabilização) + smoke E2E green
+
+## Etapa 10: Polimento e lançamento do piloto
+
+> **Base:** `docs/finalizando/polimento-e-lancamento-fdd.md` (módulos M1–M8, critérios de aceitação na §5)
+
+### M1 — Higiene do repositório
+
+- [x] revisar e commitar diff de `web/src/app/pages/booking/BookingSuccess.tsx` # 5677fae — wa.me dinâmico; fallback de phone hardcoded anotado p/ M5
+- [x] revisar e commitar diffs de `.gitignore`, `CLAUDE.md`, `docs/task.md` e novos docs # e9bc4ee (gitignore+CLAUDE.md) + commit de docs desta etapa
+- [x] commitar `.env.example` da raiz (conferir antes: apenas nomes de variáveis, sem valores) # bba6596 — só placeholders seguros
+- [x] decidir destino de `agent-skills/` # decisão: fora do git, apenas local — adicionado ao .gitignore
+- [x] mover/limpar artefatos de teste soltos na raiz # N/A — já não existem (`booking-*.png`, `e2e-booking-*.mjs`, `run-*.png` ausentes da raiz)
+- [x] rodar verificação de segredos (git ls-files + grep de conteúdo) # PASS — 0 arquivos sensíveis trackeados; matches só falsos positivos/placeholders
+- [x] comentar e commitar: "chore: higiene do repositório pré-piloto" # fechado pelo commit de docs da etapa 10
+
+### M2 — Limpeza de código legado
+
+- [ ] remover `backend/cancel-appointment-rpc.sql` e `backend/supabase/rpc_updates.sql` (substituídos pelas migrations numeradas)
+- [ ] descartar worktree `fix-agendamento-backend` (commits já em main)
+- [ ] npm run build
+- [ ] npm run test:unit
+- [ ] comentar e commitar: "chore(backend): remover RPCs avulsas redundantes"
+
+### M3 — Revisão de segurança
+
+- [ ] aplicar decisão: 500 genérico no endpoint público; code/message do Postgres apenas em log do servidor
+- [ ] confirmar rate limit ativo no POST /v1/public/appointments (10/min por IP) com teste
+- [ ] revisar DTOs públicos (PublicProfessional, PublicService, PublicAppointment) — zero PII
+- [ ] npm run test:security
+- [ ] comentar e commitar: "fix(backend): endurecer resposta de erro pública"
+
+### M4 — Banco e RPCs
+
+- [ ] listar migrations numeradas e confirmar ordem (schema → migrations → seeds)
+- [ ] validar no Supabase as versões de get_available_slots_v1 (buffer zero), create_appointment_v1, cancel_appointment_v1 e reschedule_appointment_v1
+- [ ] npm run test:integration
+- [ ] comentar e commitar (se houver migration nova): "fix(db): alinhar RPCs do banco com migrations"
+
+### M5 — Polimento web (/p/:slug)
+
+- [ ] revisar estados de loading/vazio/erro em todas as etapas do booking público
+- [ ] revisar fallback de telefone hardcoded no link WhatsApp de `BookingSuccess.tsx` (mover p/ config ou remover fallback)
+- [ ] confirmar redirect da rota legada /booking/:slug → /p/:slug
+- [ ] medir bundle da página pública (otimizar só se estourar ~150kb JS gzipped)
+- [ ] rodar smoke E2E do booking público (6 cenários)
+- [ ] comentar e commitar: "fix(web): polimento do booking público" (se houver mudança)
+
+### M6 — Configuração de produção
+
+- [ ] conferir variáveis no Railway (backend + worker) — apenas presença/nomes, nunca valores
+- [ ] conferir allowlist CORS com domínios reais e VITE_API_URL / BACKEND_URL (expoConfig.extra) nos deploys
+- [ ] congelar contrato da API v1: revisar docs/api_v1.md contra rotas reais e marcar oficial
+- [ ] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de segredos
+- [ ] comentar e commitar: "ci: gate automatizado de build, testes e secrets"
+
+### M7 — Validação fim-a-fim
+
+- [ ] criar agendamento real via /p/:slug em produção (guest)
+- [ ] confirmar appointment salvo com snapshots e visível na agenda mobile
+- [ ] confirmar push notification em device físico
+- [ ] confirmar notificação WhatsApp processada (pending → sent) ou failure_reason compreendido
+- [ ] testar cancelamento e reagendamento pelo mobile com notificações correspondentes
+- [ ] registrar evidências (timestamps, ids, screenshots) no progress.md
+- [ ] comentar e commitar: "test: validação fim-a-fim do fluxo de piloto"
+
+### M8 — Lançamento
+
+- [ ] escrever plano de rollback (Railway, Supabase, Expo OTA)
+- [ ] definir monitoramento mínimo: GET /health, status do worker, fila de notifications
+- [ ] atualizar documentação oficial e registrar ADRs (buffer zero, erro 500 genérico, contrato congelado, redirect legado)
+- [ ] criar tag v1.0.0-pilot no commit de release
+- [ ] iniciar piloto com grupo controlado (1–3 profissionais)
+- [ ] comentar e commitar: "docs: documentação de lançamento e ADRs do piloto"
+
+
+
+
+
+> Nota: as limpezas/pendências P1/P2 que estavam anotadas aqui foram absorvidas pela Etapa 10 (M2 = RPCs avulsas e worktree antigo; M3 = surfacing de erro no 500; M4 = validação das versões das RPCs no banco).

@@ -98,3 +98,14 @@ Consolidar a estratégia de testes e o tratamento de débito técnico do FDD par
 - Validar os fluxos críticos do mobile (login, logout, sessão, push, agenda) com type-check e testes.
 - Resolver o débito técnico conhecido: rota de booking duplicada e artefatos de teste soltos no repositório.
 - Rodar a verificação obrigatória de build/testes e a checagem de segredos antes de declarar o V1 pronto.
+
+## Etapa 10 — Polimento e lançamento do piloto
+
+Preparar a disponibilização real do V1 conforme `docs/finalizando/polimento-e-lancamento-fdd.md` (módulos M1–M8), usando o pipeline de skills Review → Verify → Ship: higiene do repositório, limpeza de legado, endurecimento de segurança, alinhamento do banco, polimento do booking público, configuração de produção, validação fim-a-fim e lançamento controlado.
+
+- Limpar o working tree (diffs pendentes, artefatos soltos) e remover código legado redundante (RPCs avulsas, worktree antigo).
+- Endurecer a resposta de erro do endpoint público (500 genérico; detalhe só em log) e revalidar rate limit e DTOs sem PII.
+- Validar que as RPCs do banco de produção correspondem às migrations numeradas e que a ordem schema → migrations → seeds está documentada.
+- Polir a página pública `/p/:slug` (estados de loading/vazio/erro, redirect da rota legada, budget de bundle) com smoke E2E verde.
+- Configurar produção (Railway, CORS, env por painel), congelar o contrato da API v1 e estabelecer gate de CI (build + testes + scan de segredos).
+- Validar o fluxo completo com evidência (booking público → banco → agenda mobile → push → WhatsApp) e lançar com monitoramento, plano de rollback e tag `v1.0.0-pilot`.
