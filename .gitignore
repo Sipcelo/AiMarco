@@ -2,13 +2,21 @@
 .env
 .env.*
 !.env.example
+**/.env
+**/.env.*
+!**/.env.example
 *.pem
 *.key
+*.secret
+*secret*
+*credential*
 *service*.txt
 *supa*.txt
 *supa-status.json
 backend/supa-*.txt
 backend/supa-status.json
+apps/mobile/.env
+apps/mobile/.env.*
 
 # dependencies
 node_modules/
@@ -28,6 +36,7 @@ logs/
 .agents/
 .claude/
 .claude/worktrees/
+agent-skills/
 
 # python
 venv/

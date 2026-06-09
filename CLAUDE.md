@@ -541,3 +541,20 @@ Não crie arquivos temporários no repo sem limpar.
 Não altere arquitetura sem explicar impacto.
 
 Sempre preserve a simplicidade do V1.
+
+# Regras de commit para agentes/Claude
+
+⚠️ Não fazer commit de arquivos sensíveis:
+
+- Todos os `.env` (backend/.env, web/.env, apps/mobile/.env)
+- Arquivos `supa-*.txt` e `supa-status.json`
+- `backend/supabase/.temp/`
+- Logs (`*.log`)
+- Chaves privadas (`*.pem`, `*.key`, `*.secret`)
+
+⚠️ Procedimentos obrigatórios antes de commit:
+
+1. Rodar `git status --short` e confirmar que não há arquivos sensíveis staged.
+2. Rodar build/testes se houver alterações no backend.
+3. Documentar todos os arquivos alterados e comandos utilizados.
+4. Nunca colocar secrets nos README, docs ou exemplos de código.
