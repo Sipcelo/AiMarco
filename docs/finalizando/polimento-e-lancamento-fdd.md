@@ -111,10 +111,10 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 - **Purpose:** remover redundâncias que confundem manutenção, sem mudar comportamento.
 - **Fonte:** pendências P1/P2 anotadas no fim do `task.md`.
 
-- [ ] remover `backend/cancel-appointment-rpc.sql` e `backend/supabase/rpc_updates.sql` (substituídos pelas migrations numeradas)
-- [ ] descartar worktree `fix-agendamento-backend` (todos os commits já estão em `main`)
-- [ ] `npm run build` + `npm run test:unit` no backend (provar que nada quebrou)
-- [ ] comentar e commitar: "chore(backend): remover RPCs avulsas redundantes"
+- [x] remover `backend/cancel-appointment-rpc.sql` e `backend/supabase/rpc_updates.sql` # f759f89 — funções já promovidas a migrations numeradas; zero referências no código
+- [x] descartar worktree `fix-agendamento-backend` # N/A — já não existe
+- [x] `npm run build` + `npm run test:unit` no backend # tsc 0 erros + 205 passed
+- [x] comentar e commitar: "chore(backend): remover RPCs avulsas redundantes" # f759f89
 
 ### M3 — Revisão de segurança
 
@@ -158,7 +158,7 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 - [ ] conferir variáveis no Railway (backend + worker) — apenas presença/nomes, nunca valores (lista em §7.1)
 - [ ] conferir allowlist CORS com os domínios reais de produção
 - [ ] conferir `VITE_API_URL` no deploy da web e `BACKEND_URL` no `expoConfig.extra` do mobile (sem URLs hardcoded)
-- [ ] congelar contrato da API v1: revisar `docs/api_v1.md` contra as rotas reais e marcar como oficial
+- [ ] congelar contrato da API v1: revisar `docs/api_v1.md` contra as rotas reais e marcar como oficial # corrigir refs stale para migration inexistente `20260402120000_rpc_updates.sql` (achado no M2)
 - [ ] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de secrets em todo push
 - [ ] comentar e commitar: "ci: gate automatizado de build, testes e secrets"
 

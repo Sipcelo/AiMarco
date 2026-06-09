@@ -135,11 +135,11 @@
 
 ### M2 — Limpeza de código legado
 
-- [ ] remover `backend/cancel-appointment-rpc.sql` e `backend/supabase/rpc_updates.sql` (substituídos pelas migrations numeradas)
-- [ ] descartar worktree `fix-agendamento-backend` (commits já em main)
-- [ ] npm run build
-- [ ] npm run test:unit
-- [ ] comentar e commitar: "chore(backend): remover RPCs avulsas redundantes"
+- [x] remover `backend/cancel-appointment-rpc.sql` e `backend/supabase/rpc_updates.sql` # f759f89 — 3 funções (create/cancel/reschedule_appointment_v1) já cobertas por migrations 20260529000001 / 20260601000000 / 20260601000001; nenhum código referenciava os avulsos
+- [x] descartar worktree `fix-agendamento-backend` # N/A — `git worktree list` já só mostra main
+- [x] npm run build # tsc 0 erros (após npm ci — backend estava sem node_modules)
+- [x] npm run test:unit # 205 passed (11 arquivos)
+- [x] comentar e commitar: "chore(backend): remover RPCs avulsas redundantes" # f759f89
 
 ### M3 — Revisão de segurança
 
@@ -169,7 +169,7 @@
 
 - [ ] conferir variáveis no Railway (backend + worker) — apenas presença/nomes, nunca valores
 - [ ] conferir allowlist CORS com domínios reais e VITE_API_URL / BACKEND_URL (expoConfig.extra) nos deploys
-- [ ] congelar contrato da API v1: revisar docs/api_v1.md contra rotas reais e marcar oficial
+- [ ] congelar contrato da API v1: revisar docs/api_v1.md contra rotas reais e marcar oficial # corrigir refs stale: api_v1.md aponta p/ migration inexistente `20260402120000_rpc_updates.sql` (achado no M2)
 - [ ] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de segredos
 - [ ] comentar e commitar: "ci: gate automatizado de build, testes e secrets"
 
