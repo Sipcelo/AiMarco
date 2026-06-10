@@ -118,7 +118,11 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
 
   await fastify.register(rateLimit, {
     global: false,
-    errorResponseBuilder: () => ({
+    // O plugin faz `throw errorResponseBuilder(...)`. Sem `statusCode` no objeto,
+    // o error handler do Fastify cai no default 500. Propagar context.statusCode
+    // (429, ou 403 em ban) garante o código correto, preservando a mensagem em `error`.
+    errorResponseBuilder: (_req, context) => ({
+      statusCode: context.statusCode,
       error: "Muitas requisições. Aguarde um momento antes de tentar novamente.",
     }),
   });
