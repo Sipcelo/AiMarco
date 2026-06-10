@@ -47,6 +47,8 @@ export async function createAppointmentHandler(
         res.end(JSON.stringify({ error: err.message }));
         return;
       }
+      // Log full Postgres/Supabase error server-side; client only sees generic message
+      console.error('[createAppointment] Unexpected error:', err);
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Erro interno no servidor.' }));
     }
@@ -59,6 +61,7 @@ export async function createAppointmentHandler(
       }));
       return;
     }
+    console.error('[createAppointmentHandler] Unexpected error:', err);
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Erro interno no servidor.' }));
   }
