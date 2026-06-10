@@ -159,12 +159,13 @@
 
 ### M5 — Polimento web (/p/:slug)
 
-- [ ] revisar estados de loading/vazio/erro em todas as etapas do booking público
-- [ ] revisar fallback de telefone hardcoded no link WhatsApp de `BookingSuccess.tsx` (mover p/ config ou remover fallback)
-- [ ] confirmar redirect da rota legada /booking/:slug → /p/:slug
-- [ ] medir bundle da página pública (otimizar só se estourar ~150kb JS gzipped)
-- [ ] rodar smoke E2E do booking público (6 cenários)
-- [ ] comentar e commitar: "fix(web): polimento do booking público" (se houver mudança)
+- [x] revisar estados de loading/vazio/erro em todas as etapas do booking público # ProfessionalBookingPage: loading spinner, error card (prof inexistente), erro banner (sem serviços), slot vazio ("Nenhum horário disponível"), slot loading — todos OK
+- [x] revisar fallback de telefone hardcoded no `BookingSuccess.tsx` # NÃO é bug: BookingSuccess só roda em /example-* (demo); o número é o contato comercial da demo. Produção (/p/:slug → SuccessScreen) usa telefone dinâmico. Extraído p/ const nomeada DEMO_SALES_WHATSAPP (4726e52)
+- [x] confirmar redirect da rota legada /booking/:slug → /p/:slug # Router.tsx LegacyBookingRedirect com replace, preserva slug — OK
+- [x] medir bundle da página pública # /p/:slug ~130kb gz no pior caso (app 62kb + index compartilhado 68kb); budget landing 150kb gz — dentro. Sem otimização necessária
+- [x] rodar smoke E2E do booking público (6 cenários) # d28055e — 6/6 verde (local, proxy /v1→prod, read-only). Teste "fill client info" tornado determinístico (busca dia com slot; senão valida estado vazio). NÃO rodei booking-production.spec.ts (cria agendamento real + data hardcoded no passado — ver achado abaixo)
+- [ ] revisar/remover `web/e2e/booking-production.spec.ts` # ACHADO M5: cria agendamento REAL em produção (clica "Confirmar Agendamento") com data hardcoded no passado (30/05/2026) — perigoso e quebrado; substituir por smoke read-only ou remover
+- [x] comentar e commitar # d28055e (E2E + data-testid) + 4726e52 (const demo)
 
 ### M6 — Configuração de produção
 

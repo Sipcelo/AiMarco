@@ -143,12 +143,15 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 - **Purpose:** a página pública de booking é a porta de entrada do cliente final — deve estar impecável.
 - **Fonte:** CLAUDE.md ("rota pública principal tratada como produto principal"), `FDD.md` §4.10.
 
-- [ ] revisar estados de loading/empty/error em todas as etapas (service → datetime → client → confirm → success)
-- [ ] revisar fallback de telefone hardcoded no link WhatsApp de `BookingSuccess.tsx` (mover para config ou remover fallback) # achado da revisão do M1
-- [ ] confirmar redirect da rota legada `/booking/:slug` → `/p/:slug` funcionando
-- [ ] medir bundle da página pública (`vite build` + análise) — só otimizar se estourar budget de landing (~150kb JS gzipped)
-- [ ] rodar smoke E2E do booking público (6 cenários) contra ambiente de produção/staging
-- [ ] comentar e commitar: "fix(web): polimento do booking público" (se houver mudança)
+- [x] revisar estados de loading/empty/error em todas as etapas # `ProfessionalBookingPage`: loading spinner, error card, banner de "sem serviços", slot vazio e slot-loading — todos cobertos
+- [x] revisar fallback de telefone hardcoded no `BookingSuccess.tsx` # **não é bug**: arquivo roda só em `/example-*` (demo); número = contato comercial da demo. Produção (`/p/:slug` → `SuccessScreen`) usa telefone dinâmico. Extraído p/ const `DEMO_SALES_WHATSAPP` (`4726e52`)
+- [x] confirmar redirect da rota legada `/booking/:slug` → `/p/:slug` # `Router.tsx` `LegacyBookingRedirect` (`Navigate replace`), preserva slug
+- [x] medir bundle da página pública # `/p/:slug` ~130kb gz pior caso (app 62 + index 68); budget landing 150kb gz — **dentro**, sem otimizar (measure-first)
+- [x] rodar smoke E2E do booking público (6 cenários) # `d28055e` — **6/6 verde** (local, proxy `/v1`→prod, read-only). Teste "fill client info" tornado determinístico
+- [x] comentar e commitar # `d28055e` + `4726e52`
+
+**Achado do M5 (pendência):**
+- ⚠️ **`web/e2e/booking-production.spec.ts`** cria **agendamento real em produção** (clica "Confirmar Agendamento") com data hardcoded no passado (`30/05/2026`) — perigoso e quebrado. **Não foi executado.** Substituir por smoke read-only ou remover.
 
 ### M6 — Configuração de produção
 
