@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bloquear arquivos sensíveis versionados
+        run: |
+          if git ls-files | grep -Eiq '(^|/)(\.env$|.*supa.*\.txt|supa-status\.json|.*service.*\.txt|.*\.pem|.*\.key)$'; then
+            echo "::error::Arquivo sensível versionado encontrado"
+            git ls-files | grep -EiP '(^|/)(\.env$|.*supa.*\.txt|supa-status\.json|.*service.*\.txt|.*\.pem|.*\.key)$'
+            exit 1
+          fi
+          echo "OK: nenhum arquivo sensível versionado"
+      - name: Bloquear segredos no conteúdo versionado
+        run: |
+          # Padrões de alto sinal: JWT/anon-service keys, sb_secret_, URLs Postgres com credenciais.
+          # Exclui placeholders (.example), lockfiles e a doc de exemplo.
+          MATCHES=$(git grep -nIE 'eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{10,}|sb_secret_[A-Za-z0-9]{16,}|postgresql://[^[:space:]]*:[^[:space:]@]+@[^[:space:]]+' -- . ':(exclude)*.example' ':(exclude)*package-lock.json' 2>/dev/null | grep -viE 'your-|user:pass@host|placeholder|example' || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Possível segredo no conteúdo versionado"
+            echo "$MATCHES"
+            exit 1
+          fi
+          echo "OK: nenhum segredo real no conteúdo"
+
+  backend:
+    name: Backend (build + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build --workspace backend
+      - name: Unit tests
+        run: npm run test:unit --workspace backend
+      - name: Security tests
+        run: npm run test:security --workspace backend
+      - name: Integration tests
+        run: npm run test:integration --workspace backend
+
+  web:
+    name: Web (build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build --workspace web
