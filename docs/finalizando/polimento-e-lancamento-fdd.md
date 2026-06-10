@@ -170,6 +170,7 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 
 - **Purpose:** provar o fluxo completo com evidência antes de aceitar usuários reais.
 - **Fonte:** P1 do CLAUDE.md ("testar fluxo completo web → backend → mobile"), P0 ("WhatsApp pending se worker ativo").
+- **Roteiro executável:** `docs/finalizando/roteiro-validacao-m7.md` (pré-requisitos, fluxos A/B/C, evidências, troubleshooting).
 
 - [ ] criar agendamento real via `/p/:slug` em produção (guest, sem conta)
 - [ ] confirmar appointment salvo com snapshots no banco e visível na agenda mobile

@@ -180,6 +180,8 @@
 
 ### M7 — Validação fim-a-fim
 
+> **Roteiro executável (humano):** `docs/finalizando/roteiro-validacao-m7.md` — pré-requisitos, fluxos A/B/C, verificações, evidências e troubleshooting.
+
 - [ ] criar agendamento real via /p/:slug em produção (guest)
 - [ ] confirmar appointment salvo com snapshots e visível na agenda mobile
 - [ ] confirmar push notification em device físico
