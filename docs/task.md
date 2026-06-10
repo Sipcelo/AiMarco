@@ -152,10 +152,10 @@
 
 ### M4 — Banco e RPCs
 
-- [ ] listar migrations numeradas e confirmar ordem (schema → migrations → seeds)
-- [ ] validar no Supabase as versões de get_available_slots_v1 (buffer zero), create_appointment_v1, cancel_appointment_v1 e reschedule_appointment_v1
-- [ ] npm run test:integration
-- [ ] comentar e commitar (se houver migration nova): "fix(db): alinhar RPCs do banco com migrations"
+- [x] listar migrations numeradas e confirmar ordem (schema → migrations → seeds) # 20 migrations, ordem lexicográfica; get_available_slots_v1 redefinido 3× (final = 20260601000002 buffer zero, v_buffer_minutes:=0). Código chama exatamente 4 RPCs, todas com migration numerada
+- [x] validar no Supabase as versões das RPCs # via OpenAPI do PostgREST (read-only): as 4 RPCs existem no banco vivo; get_available_slots_v1 executa (0 slots p/ prof inexistente). ⚠️ buffer-zero interno NÃO confirmado byte-a-byte (DATABASE_URL stale — auth falhou; pg_proc inacessível). Migration é fonte da verdade
+- [x] npm run test:integration # 87 passed | 2 skipped. ⚠️ ACHADO: suíte é mock-based (stores em memória + vi.mock), NÃO bate no banco real — não valida RPCs no DB
+- [x] comentar e commitar (se houver migration nova) # SEM migration nova — as 4 RPCs já existem e batem com as migrations; nada a corrigir. Achados: (a) DATABASE_URL local com credencial inválida → M6; (b) create_public_appointment_v1 (20260323000005) órfão, nunca chamado → candidato a DROP em migration futura
 
 ### M5 — Polimento web (/p/:slug)
 
@@ -169,8 +169,10 @@
 ### M6 — Configuração de produção
 
 - [ ] conferir variáveis no Railway (backend + worker) — apenas presença/nomes, nunca valores
+- [ ] corrigir/rotacionar DATABASE_URL (credencial local inválida — auth pg falhou no M4); validar pg_proc do buffer-zero quando conexão DB-direct funcionar
 - [ ] conferir allowlist CORS com domínios reais e VITE_API_URL / BACKEND_URL (expoConfig.extra) nos deploys
 - [ ] congelar contrato da API v1: revisar docs/api_v1.md contra rotas reais e marcar oficial # corrigir refs stale: api_v1.md aponta p/ migration inexistente `20260402120000_rpc_updates.sql` (achado no M2)
+- [ ] (opcional) DROP create_public_appointment_v1 órfão via migration nova (achado no M4)
 - [ ] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de segredos
 - [ ] comentar e commitar: "ci: gate automatizado de build, testes e secrets"
 

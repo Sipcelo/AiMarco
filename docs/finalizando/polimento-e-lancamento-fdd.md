@@ -133,11 +133,10 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 - **Purpose:** garantir que o banco de produção tem exatamente as versões corretas das funções críticas.
 - **Fonte:** pendência do `task.md` ("RPCs manuais não foram aplicadas no projeto novo").
 
-- [ ] listar migrations numeradas e confirmar ordem (schema → migrations → seeds)
-- [ ] validar no Supabase que `get_available_slots_v1` está na versão com buffer zero (commit `cdc39a5`)
-- [ ] validar que `create_appointment_v1`, `cancel_appointment_v1` e `reschedule_appointment_v1` correspondem às migrations numeradas
-- [ ] rodar `npm run test:integration` contra o banco validado (79 testes)
-- [ ] comentar e commitar (se houver migration nova): "fix(db): alinhar RPCs do banco com migrations"
+- [x] listar migrations numeradas e confirmar ordem (schema → migrations → seeds) # 20 migrations, ordem lexicográfica; `get_available_slots_v1` definido 3× (final = `20260601000002`, buffer zero)
+- [x] validar no Supabase que as 4 RPCs existem e batem com as migrations # via OpenAPI do PostgREST (read-only): todas presentes; `get_available_slots_v1` executa. **Limitação:** buffer-zero interno não confirmado byte-a-byte (ver §7.2)
+- [x] rodar `npm run test:integration` # 87 passed | 2 skipped — **mock-based**, não valida o DB real (ver §7.2)
+- [x] comentar e commitar (se houver migration nova) # sem migration nova; nada a alinhar. Achados → §7.2 e M6
 
 ### M5 — Polimento web (produto principal: `/p/:slug`)
 
@@ -260,10 +259,16 @@ Templates versionáveis: `.env.example` (raiz), `backend/.env.example`, `web/.en
 
 ### 7.2 Supabase
 
-- Ordem de execução: **schema → migrations numeradas → seeds**.
-- Validar presença e versão das RPCs: `create_appointment_v1`, `get_available_slots_v1` (buffer zero), `cancel_appointment_v1`, `reschedule_appointment_v1` (lê `blocked_slots.time_range`).
+- Ordem de execução: **schema → migrations numeradas → seeds**. 20 migrations, aplicadas em ordem lexicográfica do nome (timestamp).
+- RPCs validadas no banco vivo (M4, via OpenAPI do PostgREST, read-only): `create_appointment_v1`, `get_available_slots_v1`, `cancel_appointment_v1`, `reschedule_appointment_v1` — **todas existem**; `get_available_slots_v1` executa. O código chama exatamente essas 4.
 - Constraints GiST ativas em `appointments`, `blocked_slots`, `availability_rules`.
 - Timezone padrão `America/Sao_Paulo`; convenção `day_of_week` 0–6.
+
+**Achados do M4 (pendências para M6/M7):**
+- ⚠️ **`DATABASE_URL` local com credencial inválida** — conexão `pg` direta falhou (`password authentication failed`). REST (SUPABASE_URL + SERVICE_ROLE_KEY) funciona. Impede validar `pg_proc` (buffer-zero interno byte-a-byte). Resolver/rotacionar no M6.
+- ⚠️ **Suíte `test:integration` é mock-based** (stores em memória + `vi.mock`), não conecta ao banco real — apesar do nome. Para validação real fim-a-fim, contar com o M7 (booking real em produção), não com essa suíte.
+- 🧹 **`create_public_appointment_v1` (migration `20260323000005`) está órfão** — nunca chamado pelo código (substituído por `create_appointment_v1`). Candidato a `DROP` em migration futura (presença é inócua).
+- ✅ Buffer zero é a fonte da verdade na migration `20260601000002` (`v_buffer_minutes := 0`); a função existe e roda no banco.
 
 ### 7.3 Railway / Deploy
 
