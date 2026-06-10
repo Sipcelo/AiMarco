@@ -218,6 +218,7 @@ function DateTimeStep({ service, availableDays, selectedDate, selectedTime, time
             return (
               <div
                 key={dateStr}
+                data-testid="day-chip"
                 onClick={() => onSelectDate(dateStr)}
                 style={{
                   minWidth: 52, padding: '10px 0', borderRadius: 12,
@@ -267,6 +268,7 @@ function DateTimeStep({ service, availableDays, selectedDate, selectedTime, time
               return (
                 <span
                   key={time}
+                  data-testid="time-slot"
                   onClick={() => onSelectTime(time)}
                   style={{
                     padding: '8px 16px', borderRadius: 10, cursor: 'pointer',
