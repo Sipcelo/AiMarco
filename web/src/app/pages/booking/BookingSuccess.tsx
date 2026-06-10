@@ -11,9 +11,14 @@ interface BookingSuccessProps {
   professional: Professional | null
 }
 
+// Tela usada APENAS nas rotas de demonstração (/example-*), não no booking real (/p/:slug).
+// O botão "Contate-nos" leva ao contato comercial da demo; este é o número de fallback
+// dessa vitrine quando o profissional de exemplo não tem telefone definido.
+const DEMO_SALES_WHATSAPP = '555399816749'
+
 export function BookingSuccess({ selectedDate, selectedTime, selectedService, clientName, professional }: BookingSuccessProps) {
   const contactHref = (() => {
-    const rawPhone = professional?.phone?.replace(/\D/g, '') || '555399816749'
+    const rawPhone = professional?.phone?.replace(/\D/g, '') || DEMO_SALES_WHATSAPP
     const phone = rawPhone.startsWith('55') ? rawPhone : `55${rawPhone}`
     const message = encodeURIComponent('Ola! Quero conhecer a Auralynne para minha agenda.')
     return `https://wa.me/${phone}?text=${message}`
