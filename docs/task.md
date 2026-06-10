@@ -144,11 +144,11 @@
 ### M3 — Revisão de segurança
 
 - [x] triagem e correção de vulnerabilidades npm do backend # ff1cd66 — `npm audit fix` (sem --force): 8→1; corrigidas runtime (fastify 5.8.5, fast-uri 3.1.2, @fastify/static, ws 8.21.0) + dev (shell-quote 1.8.4 critical). Resíduo aceito: vite (dev-only ←vitest, só `--force`). Build+205 unit+53 security verdes
-- [ ] aplicar decisão: 500 genérico no endpoint público; code/message do Postgres apenas em log do servidor
-- [ ] confirmar rate limit ativo no POST /v1/public/appointments (10/min por IP) com teste
-- [ ] revisar DTOs públicos (PublicProfessional, PublicService, PublicAppointment) — zero PII
-- [ ] npm run test:security
-- [ ] comentar e commitar: "fix(backend): endurecer resposta de erro pública"
+- [x] aplicar decisão: 500 genérico no endpoint público; code/message do Postgres apenas em log do servidor # 9a7df24 — handler já devolvia genérico; adicionado console.error server-side do erro completo
+- [x] confirmar rate limit ativo no POST /v1/public/appointments (10/min por IP) com teste # 8e740ba — config OK (max:10/min por IP), mas teste revelou BUG: plugin devolvia 500 em vez de 429 (errorResponseBuilder sem statusCode → default 500 do Fastify). Corrigido + teste em tests/security/rate-limit.test.ts
+- [x] revisar DTOs públicos (PublicProfessional, PublicService, PublicAppointment) — zero PII # allowlist por construção; transformers montam objeto novo só com campos seguros (sem email/phone/client_*). Booking eco só PII do próprio cliente
+- [x] npm run test:security # 55 passed (eram 53 + 2 do rate-limit)
+- [x] comentar e commitar: "fix(backend): endurecer resposta de erro pública" # 9a7df24 + 8e740ba (dois temas separados)
 
 ### M4 — Banco e RPCs
 

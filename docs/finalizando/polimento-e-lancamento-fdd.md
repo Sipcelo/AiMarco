@@ -122,11 +122,11 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 - **Fonte:** pendência do `task.md` (surfacing de erro), CLAUDE.md (política de secrets, áreas críticas), achado do `npm audit` no M2.
 
 - [x] triagem e correção de vulnerabilidades npm do backend # ff1cd66 — `npm audit fix` sem `--force`: 8→1 vulns. Corrigidas as de runtime (fastify 5.8.5, fast-uri 3.1.2, @fastify/static, ws 8.21.0) e a critical dev `shell-quote` 1.8.4. Só `package-lock.json` mudou (bumps in-range). Resíduo aceito: `vite` (high, dev-only ←vitest; exigiria `--force` fora do range). Revalidado: build + 205 unit + 53 security verdes.
-- [ ] aplicar decisão §9: voltar ao erro genérico no 500 do endpoint público, mantendo code/message do Postgres apenas em log do servidor
-- [ ] confirmar rate limit ativo no `POST /v1/public/appointments` (10/min por IP) com teste
-- [ ] revisar DTOs públicos (`PublicProfessional`, `PublicService`, `PublicAppointment`) — zero PII vazada
-- [ ] rodar `npm run test:security` (53 testes) e scan de secrets completo
-- [ ] comentar e commitar: "fix(backend): endurecer resposta de erro pública" (se houver mudança)
+- [x] aplicar decisão §9: erro genérico no 500 do endpoint público, com code/message do Postgres apenas em log do servidor # 9a7df24
+- [x] confirmar rate limit ativo no `POST /v1/public/appointments` (10/min por IP) com teste # 8e740ba — **bug encontrado e corrigido**: retornava 500 em vez de 429 (ver §6.2)
+- [x] revisar DTOs públicos (`PublicProfessional`, `PublicService`, `PublicAppointment`) — zero PII vazada # allowlist por construção; OK
+- [x] rodar `npm run test:security` # 55 passed
+- [x] comentar e commitar: "fix(backend): endurecer resposta de erro pública" # 9a7df24 (log) + 8e740ba (rate limit)
 
 ### M4 — Banco e RPCs
 
@@ -236,7 +236,8 @@ A arquitetura está descrita no `FDD.md` §3 e em `docs/architecture.md`: Web SP
 | Decisão | Estado | Ação nesta fase |
 |---------|--------|------------------|
 | Buffer zero entre agendamentos (`get_available_slots_v1`, commit `cdc39a5`) | implementada | registrar ADR com racional (intervalo = duração do serviço) |
-| Surfacing de code/message do Postgres no 500 público | implementada provisoriamente | decidir (ver §9), aplicar e registrar ADR |
+| Surfacing de code/message do Postgres no 500 público | **resolvida** (commit `9a7df24`) | 500 genérico no cliente; erro completo só em log do servidor |
+| Rate limit retornava **500 em vez de 429** ao exceder | **corrigida** (commit `8e740ba`) | `errorResponseBuilder` sem `statusCode` caía no default 500 do Fastify; propagar `context.statusCode`. Bug achado pelo teste novo de rate limit |
 | Contrato da API v1 congelado para o piloto | pendente | revisar `docs/api_v1.md`, marcar oficial, registrar ADR |
 | Redirect `/booking/:slug` → `/p/:slug` (em vez de remoção) | implementada | registrar ADR (manter compatibilidade de links antigos) |
 
