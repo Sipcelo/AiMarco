@@ -143,6 +143,7 @@
 
 ### M3 — Revisão de segurança
 
+- [x] triagem e correção de vulnerabilidades npm do backend # ff1cd66 — `npm audit fix` (sem --force): 8→1; corrigidas runtime (fastify 5.8.5, fast-uri 3.1.2, @fastify/static, ws 8.21.0) + dev (shell-quote 1.8.4 critical). Resíduo aceito: vite (dev-only ←vitest, só `--force`). Build+205 unit+53 security verdes
 - [ ] aplicar decisão: 500 genérico no endpoint público; code/message do Postgres apenas em log do servidor
 - [ ] confirmar rate limit ativo no POST /v1/public/appointments (10/min por IP) com teste
 - [ ] revisar DTOs públicos (PublicProfessional, PublicService, PublicAppointment) — zero PII

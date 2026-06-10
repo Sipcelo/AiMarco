@@ -119,8 +119,9 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 ### M3 — Revisão de segurança
 
 - **Purpose:** fechar as pendências de segurança antes de expor o sistema a usuários reais.
-- **Fonte:** pendência do `task.md` (surfacing de erro), CLAUDE.md (política de secrets, áreas críticas).
+- **Fonte:** pendência do `task.md` (surfacing de erro), CLAUDE.md (política de secrets, áreas críticas), achado do `npm audit` no M2.
 
+- [x] triagem e correção de vulnerabilidades npm do backend # ff1cd66 — `npm audit fix` sem `--force`: 8→1 vulns. Corrigidas as de runtime (fastify 5.8.5, fast-uri 3.1.2, @fastify/static, ws 8.21.0) e a critical dev `shell-quote` 1.8.4. Só `package-lock.json` mudou (bumps in-range). Resíduo aceito: `vite` (high, dev-only ←vitest; exigiria `--force` fora do range). Revalidado: build + 205 unit + 53 security verdes.
 - [ ] aplicar decisão §9: voltar ao erro genérico no 500 do endpoint público, mantendo code/message do Postgres apenas em log do servidor
 - [ ] confirmar rate limit ativo no `POST /v1/public/appointments` (10/min por IP) com teste
 - [ ] revisar DTOs públicos (`PublicProfessional`, `PublicService`, `PublicAppointment`) — zero PII vazada
@@ -313,6 +314,7 @@ Toda task fecha no formato do CLAUDE.md: **Arquivos alterados / Comandos executa
 1. **Erro 500 público — DECIDIDO:** voltar ao genérico no endpoint público; detalhe (code/message do Postgres) apenas em log do servidor. Implementação na task M3; registrar ADR na M8.
 2. **`agent-skills/` — DECIDIDO:** fica fora do repo do produto, apenas local. Aplicado: entrada `agent-skills/` adicionada ao `.gitignore`.
 3. **Etapa 10 no `plan.md`/`task.md` — DECIDIDO:** sim, sincronizar em passos separados. Aplicado: Etapa 10 adicionada ao `plan.md` e o checklist correspondente ao `task.md`.
+4. **Vulnerabilidades npm do backend — DECIDIDO (2026-06-10):** rodar `npm audit fix` sem `--force`. Aplicado (commit `ff1cd66`): 7 das 8 vulns corrigidas dentro dos ranges semver. **Resíduo aceito:** `vite` (high) é dev-only (vem do `vitest`, nunca deployado); o fix exigiria `--force` para `vite@6.4.3`, fora do range — não vale arriscar o test runner por uma vuln que não embarca em produção. Reavaliar quando o `vitest` subir naturalmente.
 
 ---
 
