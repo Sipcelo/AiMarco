@@ -438,7 +438,7 @@ generate_slug('João')               → 'joao'  (if already taken: 'joao-1')
 
 ### RPC: `create_appointment_v1(p_professional_id, p_service_id, p_scheduled_at, p_client_name, p_client_phone) RETURNS JSON`
 
-**Source:** `backend/supabase/migrations/20260402120000_rpc_updates.sql` (updated version)
+**Source:** `backend/supabase/migrations/20260529000001_fix_appointment_trigger_column.sql` (versão vigente; buffer zerado em `20260601000002`)
 **Purpose:** Versioned replacement for `create_public_appointment_v1` with `availability_rules` validation.
 **Security:** Invoker rights. Called by `POST /v1/appointments`.
 
@@ -478,7 +478,7 @@ generate_slug('João')               → 'joao'  (if already taken: 'joao-1')
 
 ### RPC: `reschedule_appointment_v1(p_old_appointment_id, p_new_scheduled_at) RETURNS JSON`
 
-**Source:** `backend/supabase/migrations/20260402120000_rpc_updates.sql`
+**Source:** `backend/supabase/migrations/20260601000001_reschedule_appointment_rpc.sql`
 **Purpose:** Atomically cancel an existing appointment and create a new one at a different time, preserving lineage.
 **Security:** Invoker rights. Called by `POST /v1/appointments/:id/reschedule`.
 
@@ -507,9 +507,11 @@ generate_slug('João')               → 'joao'  (if already taken: 'joao-1')
 
 ---
 
-### RPC: `get_available_slots_v2(p_professional_id, p_service_id, p_date) RETURNS TABLE (available_time TEXT)`
+> ⚠️ **As RPCs `_v2` abaixo NUNCA foram implementadas.** A migration `20260402180000_contract_v2.sql` não existe no repositório e o backend não as chama (o código usa apenas as `_v1`). A premissa do "contrato v2" (adicionar snapshots ausentes nas v1) também está obsoleta: as `_v1` passaram a gravar snapshots nas migrations `20260325000001_add_snapshots_to_appointments.sql` e `20260529000001_fix_appointment_trigger_column.sql`, e o buffer foi zerado em `20260601000002`. **O contrato oficial e congelado do piloto é o conjunto `_v1`.** As seções v2 ficam abaixo apenas como registro histórico de design.
 
-**Source:** `backend/supabase/migrations/20260402180000_contract_v2.sql`
+### RPC: `get_available_slots_v2(p_professional_id, p_service_id, p_date) RETURNS TABLE (available_time TEXT)` _(NÃO IMPLEMENTADA)_
+
+**Source:** `backend/supabase/migrations/20260402180000_contract_v2.sql` _(arquivo inexistente)_
 **Purpose:** Canonical contract for availability calculation — uses `availability_rules` as single source of truth.
 **Security:** Invoker rights. Called by `GET /v1/availability/:professional_id` and `GET /v1/public/professional/:id/availability`.
 
