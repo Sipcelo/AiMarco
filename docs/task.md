@@ -169,13 +169,14 @@
 
 ### M6 — Configuração de produção
 
-- [ ] conferir variáveis no Railway (backend + worker) — apenas presença/nomes, nunca valores
-- [ ] corrigir/rotacionar DATABASE_URL (credencial local inválida — auth pg falhou no M4); validar pg_proc do buffer-zero quando conexão DB-direct funcionar
-- [ ] conferir allowlist CORS com domínios reais e VITE_API_URL / BACKEND_URL (expoConfig.extra) nos deploys
-- [ ] congelar contrato da API v1: revisar docs/api_v1.md contra rotas reais e marcar oficial # corrigir refs stale: api_v1.md aponta p/ migration inexistente `20260402120000_rpc_updates.sql` (achado no M2)
+- [ ] ⏳ HUMANO: conferir variáveis no Railway (backend + worker) — painel; nomes em FDD §7.1, lidas/validadas por config.ts (Zod)
+- [ ] ⏳ HUMANO: corrigir/rotacionar DATABASE_URL (credencial local inválida — auth pg falhou no M4); validar pg_proc do buffer-zero quando conexão DB-direct funcionar
+- [x] conferir allowlist CORS # app.ts: localhost, *.railway.app, *.vercel.app, aimarco.com.br. ⚠️ *.vercel/*.railway são permissivos (qualquer app nessas plataformas) — aceitável p/ piloto (auth é o boundary real); considerar restringir a subdomínios fixos pós-piloto
+- [x] congelar contrato da API v1 # 6313852 — corrigidas 2 refs stale (create/reschedule → migrations reais); ACHADO: api_v1.md documentava 4 RPCs `_v2` de migration inexistente (`20260402180000_contract_v2.sql`) NUNCA criadas — marcadas como não implementadas; v1 = contrato oficial congelado
 - [ ] (opcional) DROP create_public_appointment_v1 órfão via migration nova (achado no M4)
-- [ ] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de segredos
-- [ ] comentar e commitar: "ci: gate automatizado de build, testes e secrets"
+- [x] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de segredos # e127f28 — .github/workflows/ci.yml; comandos validados localmente (npm ci raiz → build/testes/scan verdes)
+- [x] remover spec E2E perigoso (booking-production.spec.ts) # c90f487 (achado do M5)
+- [x] comentar e commitar # c90f487 + e127f28 + 6313852
 
 ### M7 — Validação fim-a-fim
 

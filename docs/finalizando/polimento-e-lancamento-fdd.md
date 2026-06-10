@@ -158,12 +158,13 @@ git-workflow-and-versioning ──► ci-cd-and-automation ──► documentati
 - **Purpose:** infra configurada por env/painel, contrato congelado, gate automatizado.
 - **Fonte:** P0 do CLAUDE.md (Railway com novas variáveis), seção 7 deste documento.
 
-- [ ] conferir variáveis no Railway (backend + worker) — apenas presença/nomes, nunca valores (lista em §7.1)
-- [ ] conferir allowlist CORS com os domínios reais de produção
-- [ ] conferir `VITE_API_URL` no deploy da web e `BACKEND_URL` no `expoConfig.extra` do mobile (sem URLs hardcoded)
-- [ ] congelar contrato da API v1: revisar `docs/api_v1.md` contra as rotas reais e marcar como oficial # corrigir refs stale para migration inexistente `20260402120000_rpc_updates.sql` (achado no M2)
-- [ ] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de secrets em todo push
-- [ ] comentar e commitar: "ci: gate automatizado de build, testes e secrets"
+- [ ] ⏳ **HUMANO** — conferir variáveis no Railway (backend + worker), nomes em §7.1; `config.ts` valida presença via Zod no boot
+- [ ] ⏳ **HUMANO** — corrigir/rotacionar `DATABASE_URL` (inválido no M4) e validar `pg_proc` do buffer-zero
+- [x] conferir allowlist CORS # `app.ts`: localhost, `*.railway.app`, `*.vercel.app`, `aimarco.com.br`. Permissivo em `*.vercel`/`*.railway` — aceitável p/ piloto (auth é o boundary); restringir pós-piloto
+- [x] congelar contrato da API v1 # `6313852` — refs stale corrigidas; RPCs `_v2` (migration inexistente) marcadas como **nunca implementadas**; `_v1` = contrato oficial
+- [x] configurar CI mínimo (build + 3 suítes + scan de segredos em todo push) # `e127f28` — `.github/workflows/ci.yml`, comandos validados localmente
+- [x] remover spec E2E perigoso `booking-production.spec.ts` # `c90f487` (achado do M5)
+- [x] comentar e commitar # `c90f487` + `e127f28` + `6313852`
 
 ### M7 — Validação fim-a-fim
 
