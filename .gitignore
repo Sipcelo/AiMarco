@@ -48,3 +48,12 @@ backend/supabase/.temp/
 # Local env files
 backend/.env
 web/.env
+
+# coverage
+coverage/
+
+# native signing / firebase config (inject via EAS secrets)
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
