@@ -32,4 +32,4 @@ COPY --from=web-builder /web/dist ./public
 COPY backend/package.json ./
 
 EXPOSE 3333
-CMD ["node", "dist/server.js"]
+CMD ["npm", "start"]
