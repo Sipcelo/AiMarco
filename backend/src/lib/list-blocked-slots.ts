@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { fromTstzRange, toTstzRange } from './time-range.js';
 
 export async function listBlockedSlots(
   professionalId: string,
@@ -17,13 +18,15 @@ export async function listBlockedSlots(
 
   const { data, error } = await supabase
     .from('blocked_slots')
-    .select('id, starts_at, ends_at, reason')
+    .select('id, time_range, reason')
     .eq('professional_id', professionalId)
-    .lt('starts_at', endWindow)
-    .gt('ends_at', startWindow)
-    .order('starts_at', { ascending: true });
+    .overlaps('time_range', toTstzRange(startWindow, endWindow))
+    .order('time_range', { ascending: true });
 
   if (error) throw error;
 
-  return data || [];
+  return (data || []).map((row: any) => {
+    const { id, time_range, reason } = row;
+    return { id, ...fromTstzRange(time_range), reason };
+  });
 }

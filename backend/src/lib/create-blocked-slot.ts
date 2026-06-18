@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js';
+import { fromTstzRange, toTstzRange } from './time-range.js';
 
 export async function createBlockedSlot(
   professionalId: string,
@@ -23,8 +24,7 @@ export async function createBlockedSlot(
     .from('blocked_slots')
     .select('id')
     .eq('professional_id', professionalId)
-    .lt('starts_at', endsAt)
-    .gt('ends_at', startsAt);
+    .overlaps('time_range', toTstzRange(startsAt, endsAt));
 
   if (checkError) throw checkError;
 
@@ -35,11 +35,11 @@ export async function createBlockedSlot(
   // Check for conflicting confirmed appointments
   const { data: conflicting, error: conflictError } = await supabase
     .from('appointments')
-    .select('id, scheduled_at')
+    .select('id, scheduled_start')
     .eq('professional_id', professionalId)
     .eq('status', 'confirmed')
-    .lt('scheduled_at', endsAt)
-    .gte('scheduled_at', startsAt);
+    .lt('scheduled_start', endsAt)
+    .gte('scheduled_start', startsAt);
 
   if (conflictError) throw conflictError;
 
@@ -47,17 +47,18 @@ export async function createBlockedSlot(
     .from('blocked_slots')
     .insert({
       professional_id: professionalId,
-      starts_at: startsAt,
-      ends_at: endsAt,
+      time_range: toTstzRange(startsAt, endsAt),
       reason: reason || null,
     })
-    .select()
+    .select('id, time_range, reason')
     .single();
 
   if (error) throw error;
 
   return {
-    ...data,
+    id: data.id,
+    ...fromTstzRange(data.time_range),
+    reason: data.reason,
     warnings:
       conflicting && conflicting.length > 0
         ? `Atenção: ${conflicting.length} agendamento(s) confirmado(s) neste período. Verifique e cancele manualmente se necessário.`
