@@ -164,16 +164,16 @@
 - [x] confirmar redirect da rota legada /booking/:slug → /p/:slug # Router.tsx LegacyBookingRedirect com replace, preserva slug — OK
 - [x] medir bundle da página pública # /p/:slug ~130kb gz no pior caso (app 62kb + index compartilhado 68kb); budget landing 150kb gz — dentro. Sem otimização necessária
 - [x] rodar smoke E2E do booking público (6 cenários) # d28055e — 6/6 verde (local, proxy /v1→prod, read-only). Teste "fill client info" tornado determinístico (busca dia com slot; senão valida estado vazio). NÃO rodei booking-production.spec.ts (cria agendamento real + data hardcoded no passado — ver achado abaixo)
-- [ ] revisar/remover `web/e2e/booking-production.spec.ts` # ACHADO M5: cria agendamento REAL em produção (clica "Confirmar Agendamento") com data hardcoded no passado (30/05/2026) — perigoso e quebrado; substituir por smoke read-only ou remover
+- [x] revisar/remover `web/e2e/booking-production.spec.ts` # ACHADO M5: cria agendamento REAL em produção (clica "Confirmar Agendamento") com data hardcoded no passado (30/05/2026) — perigoso e quebrado; removido em c90f487 (ver M6 linha 178)
 - [x] comentar e commitar # d28055e (E2E + data-testid) + 4726e52 (const demo)
 
 ### M6 — Configuração de produção
 
-- [ ] ⏳ HUMANO: conferir variáveis no Railway (backend + worker) — painel; nomes em FDD §7.1, lidas/validadas por config.ts (Zod)
-- [ ] ⏳ HUMANO: corrigir/rotacionar DATABASE_URL (credencial local inválida — auth pg falhou no M4); validar pg_proc do buffer-zero quando conexão DB-direct funcionar
+- [x] conferir variáveis no Railway (backend + worker) # railway variables --kv: DATABASE_URL, SUPABASE_*, WHATSAPP_API_*, JWT_SECRET, GEMINI_API_KEY, PORT, NODE_ENV — todas presentes; backend+worker no mesmo serviço/container desde 528f6a6
+- [x] corrigir/rotacionar DATABASE_URL; validar pg_proc do buffer-zero # DATABASE_URL trocado p/ session pooler (porta 5432, suporta LISTEN/NOTIFY); worker conectado e ouvindo em produção. pg_proc.get_available_slots_v1 lido via pooler (railway run): `v_buffer_minutes INT := 0` confirmado byte-a-byte no banco vivo
 - [x] conferir allowlist CORS # app.ts: localhost, *.railway.app, *.vercel.app, aimarco.com.br. ⚠️ *.vercel/*.railway são permissivos (qualquer app nessas plataformas) — aceitável p/ piloto (auth é o boundary real); considerar restringir a subdomínios fixos pós-piloto
 - [x] congelar contrato da API v1 # 6313852 — corrigidas 2 refs stale (create/reschedule → migrations reais); ACHADO: api_v1.md documentava 4 RPCs `_v2` de migration inexistente (`20260402180000_contract_v2.sql`) NUNCA criadas — marcadas como não implementadas; v1 = contrato oficial congelado
-- [ ] (opcional) DROP create_public_appointment_v1 órfão via migration nova (achado no M4)
+- [x] DROP create_public_appointment_v1 órfão via migration nova (achado no M4) # 20260622000000_drop_orphan_public_appointment_rpc.sql; confirmado zero caller em backend/web/mobile; aplicado no banco vivo via session pooler (exists before:true → after:false)
 - [x] configurar CI mínimo: build + test:unit + test:security + test:integration + scan de segredos # e127f28 — .github/workflows/ci.yml; comandos validados localmente (npm ci raiz → build/testes/scan verdes)
 - [x] remover spec E2E perigoso (booking-production.spec.ts) # c90f487 (achado do M5)
 - [x] comentar e commitar # c90f487 + e127f28 + 6313852
