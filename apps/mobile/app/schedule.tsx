@@ -142,7 +142,7 @@ export default function ScheduleScreen() {
     if (!user?.slug) { Alert.alert('Erro', 'Slug não disponível.'); return; }
     try {
       const shareUrl = `${BACKEND_URL}/p/${user.slug}`;
-      await Share.share({ message: `Agende seu horário comigo no AiMarco: ${shareUrl}`, url: shareUrl });
+      await Share.share({ message: `Agende seu horário comigo na Auralynne: ${shareUrl}`, url: shareUrl });
     } catch (e) { console.error('Share error', e); }
   };
 

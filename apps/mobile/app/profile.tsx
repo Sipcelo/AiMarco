@@ -50,7 +50,7 @@ export default function ProfileScreen() {
     try {
       const shareUrl = `${BACKEND_URL}/p/${user.slug}`;
       await Share.share({
-        message: `Agende seu horário comigo no AiMarco: ${shareUrl}`,
+        message: `Agende seu horário comigo na Auralynne: ${shareUrl}`,
         url: shareUrl,
       });
     } catch (e) {
