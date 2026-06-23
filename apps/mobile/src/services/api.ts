@@ -42,6 +42,10 @@ export const BACKEND_URL =
   process.env.BACKEND_URL ||
   'https://aimarco.up.railway.app';
 
+// URL pública (marca Auralynne) para links compartilhados com clientes.
+// Separada do BACKEND_URL (base da API), que segue como domínio interno do AiMarco.
+export const PUBLIC_SITE_URL = 'https://auralynne.up.railway.app';
+
 // Tipos alinhados com backend/src/dtos/index.ts (DTO Layer)
 export type ServiceItem = {
   id: string;

@@ -30,7 +30,7 @@ import {
 } from 'lucide-react-native';
 import { useAuth } from '../src/contexts/AuthContext';
 import {
-  BACKEND_URL,
+  PUBLIC_SITE_URL,
   listAppointments,
   listBlockedSlots,
   createBlockedSlot,
@@ -141,7 +141,7 @@ export default function ScheduleScreen() {
   const onShare = async () => {
     if (!user?.slug) { Alert.alert('Erro', 'Slug não disponível.'); return; }
     try {
-      const shareUrl = `${BACKEND_URL}/p/${user.slug}`;
+      const shareUrl = `${PUBLIC_SITE_URL}/p/${user.slug}`;
       await Share.share({ message: `Agende seu horário comigo na Auralynne: ${shareUrl}`, url: shareUrl });
     } catch (e) { console.error('Share error', e); }
   };

@@ -31,7 +31,7 @@ describe('buildClientMessage', () => {
   it('CANCELLED mantém link de agendar novamente; RESCHEDULED sem link', () => {
     const cancelled = buildClientMessage('APPOINTMENT_CANCELLED', ctx)!;
     expect(cancelled).toContain('cancelado');
-    expect(cancelled).toContain('https://aimarco.com.br/p/regina-s-hair');
+    expect(cancelled).toContain('https://auralynne.up.railway.app/p/regina-s-hair');
 
     const rescheduled = buildClientMessage('APPOINTMENT_RESCHEDULED', ctx)!;
     expect(rescheduled).toContain('remarcado');

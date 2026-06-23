@@ -6,8 +6,8 @@
  * nunca o `full_name` interno.
  */
 
-/** Base da URL pública de booking. Domínio estável do produto. */
-const BOOKING_BASE_URL = 'https://aimarco.com.br/p/';
+/** Base da URL pública de booking (marca pública Auralynne). */
+const BOOKING_BASE_URL = 'https://auralynne.up.railway.app/p/';
 
 /** Timezone do produto (V1 inteiro em America/Sao_Paulo — ver CLAUDE.md). */
 const APP_TIMEZONE = 'America/Sao_Paulo';

@@ -13,7 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Avatar, Card, Divider, Button, TextInput, Snackbar, Portal } from 'react-native-paper';
 import { useAuth } from '../src/contexts/AuthContext';
-import { BACKEND_URL, updateProfile } from '../src/services/api';
+import { PUBLIC_SITE_URL, updateProfile } from '../src/services/api';
 
 const BUSINESS_LABELS = {
   barbershop: 'Barbeiro',
@@ -48,7 +48,7 @@ export default function ProfileScreen() {
       return;
     }
     try {
-      const shareUrl = `${BACKEND_URL}/p/${user.slug}`;
+      const shareUrl = `${PUBLIC_SITE_URL}/p/${user.slug}`;
       await Share.share({
         message: `Agende seu horário comigo na Auralynne: ${shareUrl}`,
         url: shareUrl,
