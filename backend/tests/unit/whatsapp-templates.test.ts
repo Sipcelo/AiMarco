@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { buildClientMessage } from '../../src/services/whatsapp-templates.js';
+import {
+  buildClientMessage,
+  formatAppointmentDateTime,
+} from '../../src/services/whatsapp-templates.js';
 
 const ctx = {
   clientName: 'Marcelo',
@@ -16,20 +19,34 @@ describe('buildClientMessage', () => {
     expect(msg).not.toContain('Demo Professional');
   });
 
-  it('inclui cliente, data, hora e link de booking no APPOINTMENT_CREATED', () => {
+  it('inclui cliente, data e hora no APPOINTMENT_CREATED, SEM link de reagendar/cancelar', () => {
     const msg = buildClientMessage('APPOINTMENT_CREATED', ctx)!;
     expect(msg).toContain('Marcelo');
     expect(msg).toContain('24/06/2026');
     expect(msg).toContain('11:30');
-    expect(msg).toContain('https://aimarco.com.br/p/regina-s-hair');
+    // Não existe página self-service do cliente → nenhum link no CREATED
+    expect(msg).not.toContain('http');
   });
 
-  it('monta CANCELLED e RESCHEDULED com o link correto', () => {
-    expect(buildClientMessage('APPOINTMENT_CANCELLED', ctx)).toContain('cancelado');
-    expect(buildClientMessage('APPOINTMENT_RESCHEDULED', ctx)).toContain('remarcado');
+  it('CANCELLED mantém link de agendar novamente; RESCHEDULED sem link', () => {
+    const cancelled = buildClientMessage('APPOINTMENT_CANCELLED', ctx)!;
+    expect(cancelled).toContain('cancelado');
+    expect(cancelled).toContain('https://aimarco.com.br/p/regina-s-hair');
+
+    const rescheduled = buildClientMessage('APPOINTMENT_RESCHEDULED', ctx)!;
+    expect(rescheduled).toContain('remarcado');
+    expect(rescheduled).not.toContain('http');
   });
 
   it('retorna null para template_key desconhecido', () => {
     expect(buildClientMessage('UNKNOWN_KEY', ctx)).toBeNull();
+  });
+});
+
+describe('formatAppointmentDateTime', () => {
+  it('formata no fuso America/Sao_Paulo, não no do servidor (17:00 UTC -> 14:00)', () => {
+    const { date, time } = formatAppointmentDateTime('2026-06-24T17:00:00+00:00');
+    expect(date).toBe('24/06/2026');
+    expect(time).toBe('14:00');
   });
 });

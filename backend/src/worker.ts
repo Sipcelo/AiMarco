@@ -4,7 +4,7 @@ const { Client } = pkg;
 import { supabase } from './lib/supabase.js';
 import { config } from './config.js';
 import { sendWhatsAppMessage } from './services/whatsapp.js';
-import { buildClientMessage } from './services/whatsapp-templates.js';
+import { buildClientMessage, formatAppointmentDateTime } from './services/whatsapp-templates.js';
 
 async function startWorker() {
   const client = new Client({ connectionString: config.DATABASE_URL });
@@ -61,10 +61,8 @@ async function startWorker() {
         const appt = notification.appointments;
         const recipientPhone = appt.clients.phone;
         
-        // Formatação de data/hora (Fuso: pt-BR local)
-        const dateObj = new Date(appt.scheduled_start);
-        const formattedDate = dateObj.toLocaleDateString('pt-BR');
-        const formattedTime = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        // Formatação no fuso do produto (America/Sao_Paulo), não no fuso do servidor (UTC).
+        const { date: formattedDate, time: formattedTime } = formatAppointmentDateTime(appt.scheduled_start);
         
         // Montar slug fallback
         const slug = appt.professionals.slug || appt.professionals.id;
