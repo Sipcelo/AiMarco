@@ -96,6 +96,12 @@ test("R-06 | CORS nao deve refletir origem arbitraria https://evil.railway.app",
   );
 });
 
+test("R-06b | CORS aceita a origem legitima do projeto (nao over-restringir)", async () => {
+  const res = await fetch(`${BASE}/health`, { headers: { Origin: BASE } });
+  const acao = res.headers.get("access-control-allow-origin");
+  assert.equal(acao, BASE, `origem legitima ${BASE} deveria ser refletida em Access-Control-Allow-Origin`);
+});
+
 // ─── C. Politica de senha (LGPD 46; Guia 3.2.1 §36) ───────────────────────────
 
 test("R-02a | signup rejeita senha curta (<6) — read-safe, nao cria conta", async () => {

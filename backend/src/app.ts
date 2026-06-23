@@ -42,11 +42,12 @@ const PUBLIC_DIR = fs.existsSync(path.resolve("/app/public"))
   : path.resolve(__dirname, "../../web/dist");
 const INDEX_HTML = path.join(PUBLIC_DIR, "index.html");
 
+// Allowlist de origens CORS — restrita aos domínios do projeto (R-06 / LGPD art. 46).
+// Sem wildcard de subdomínio: `*.railway.app` permitiria qualquer app de terceiros
+// como origem confiável (com credentials: true). Adicionar domínio próprio aqui quando existir.
 const ALLOWED_ORIGINS = [
-  /^http:\/\/localhost(:\d+)?$/,
-  /^https:\/\/.*\.railway\.app$/,
-  /^https:\/\/.*\.vercel\.app$/,
-  /^https:\/\/aimarco\.com\.br$/,
+  /^http:\/\/localhost(:\d+)?$/,             // dev
+  /^https:\/\/auralynne\.up\.railway\.app$/, // produção
 ];
 
 function isAllowedOrigin(origin: string): boolean {
