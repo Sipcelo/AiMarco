@@ -96,10 +96,21 @@ cadeia 100% verde. Registrar como tal ao fechar a fase.
 - [x] **P0** decidir canal do cliente # opção (b) — WhatsApp via Evolution API (Baileys)
 - [x] **P0** aplicar a decisão # Evolution deployada + instância `Regina` conectada + templates usando display_name (`services/whatsapp-templates.ts`); teste real confirmado
 - [x] **P1** (código) endpoint `/health/ready` — DB + worker preso → 503; `/health` segue como liveness do Railway
-- [ ] **P1** (ação humana) criar monitor externo (UptimeRobot/Better Stack) em `/health/ready`, alerta no não-200
+- [x] **P1** (ação humana) monitor externo em `/health/ready` ativo — acusou "Down" corretamente pelo backlog antigo
+- [x] **P1** limpar backlog órfão (56 notifications `pending` 29/mai–18/jun → `failed` stale-backlog); `/health/ready` → `200 stuck=0`
 - [ ] **P2** registrar no fechamento da fase que a cadeia §5.5 fecha com exceção WhatsApp
 - [ ] iniciar piloto com grupo controlado (1–3 profissionais) # ação humana
 - [ ] commitar: "docs: auditoria de fechamento do M8"
+
+### Achados durante a ativação do monitoramento (P2 pós-piloto)
+- **Worker não drena `pending` órfão.** O worker só reage a `NOTIFY` novo (`LISTEN new_notification`).
+  Notifications criadas enquanto o worker estava fora ficam `pending` para sempre — foi a origem das 56
+  limpas. Hoje o `/health/ready` **avisa** quando isso acontece. Correção de raiz = drain-on-boot
+  (processar `pending` no startup), **com cuidado para não reenviar agendamento passado** (só
+  marcar/abandonar os antigos, não disparar WhatsApp de evento já vencido). P2.
+- **`DATABASE_URL` com espaço no fim** (painel Railway). O worker de produção funciona (lê via `config`),
+  mas a string tem trailing space — qualquer leitura crua de `process.env.DATABASE_URL` falha
+  (`database "postgres " does not exist`). Limpar a var no painel quando puder. Não bloqueia.
 
 ---
 
@@ -110,7 +121,8 @@ M8 está **fechável como módulo de documentação/release**. Estado das lacuna
 
 - **P0** (cliente sem canal de confirmação) — ✅ **RESOLVIDO**: WhatsApp ativo via Evolution (Baileys),
   templates corrigidos (display_name), teste real confirmado.
-- **P1** (monitoramento manual, sem alerta) — **pendente**: ativar uptime monitor em `/health` antes do
-  piloto real. Risco operacional de falha silenciosa.
+- **P1** (monitoramento) — ✅ **RESOLVIDO**: endpoint `/health/ready` (DB + worker preso → 503), monitor
+  externo ativo, backlog órfão limpo. `/health/ready` → `200 stuck=0`.
 
-Recomendação: resolver P1 antes do primeiro profissional real. ADRs, rollback e tag não bloqueiam.
+Lacunas P0 e P1 fechadas. Resta apenas ação humana de operação: iniciar o piloto. Achados de raiz
+(drain-on-boot do worker, trailing space no `DATABASE_URL`) registrados como P2 pós-piloto.
