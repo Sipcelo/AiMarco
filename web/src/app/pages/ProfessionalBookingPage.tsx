@@ -775,7 +775,7 @@ export default function ProfessionalBookingPage() {
           fontFamily: P.bodyFont, fontSize: 11, color: 'rgba(245,239,233,0.2)',
           marginTop: 24, letterSpacing: '0.04em',
         }}>
-          Agendamento via AiMarco
+          Auralynne · desenvolvido por AiMarco
         </p>
       </div>
     </>
