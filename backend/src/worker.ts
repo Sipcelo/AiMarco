@@ -4,6 +4,7 @@ const { Client } = pkg;
 import { supabase } from './lib/supabase.js';
 import { config } from './config.js';
 import { sendWhatsAppMessage } from './services/whatsapp.js';
+import { buildClientMessage } from './services/whatsapp-templates.js';
 
 async function startWorker() {
   const client = new Client({ connectionString: config.DATABASE_URL });
@@ -44,7 +45,7 @@ async function startWorker() {
           *,
           appointments (
             scheduled_start,
-            professionals (full_name, phone, slug),
+            professionals (display_name, slug),
             clients (full_name, phone),
             services (name)
           )
@@ -68,33 +69,20 @@ async function startWorker() {
         // Montar slug fallback
         const slug = appt.professionals.slug || appt.professionals.id;
 
-        // Validar e enviar mensagem customizada baseada no tipo de template
-        if (notification.template_key === 'APPOINTMENT_CREATED' && notification.recipient_type === 'client') {
-          const message = `Olá ¹!! Confirmamos seu horário na ²! para o dia ³! às ⁴!. Link para reagendar/cancelar: https://aimarco.com.br/p/⁵!`
-            .replace('¹!', appt.clients.full_name)
-            .replace('²!', appt.professionals.full_name)
-            .replace('³!', formattedDate)
-            .replace('⁴!', formattedTime)
-            .replace('⁵!', slug);
+        // Mensagens ao cliente: template centralizado (usa display_name público).
+        // recipient_type != 'client' (ex.: profissional) → não envia por aqui.
+        const message =
+          notification.recipient_type === 'client'
+            ? buildClientMessage(notification.template_key, {
+                clientName: appt.clients.full_name,
+                professionalName: appt.professionals.display_name,
+                date: formattedDate,
+                time: formattedTime,
+                slug,
+              })
+            : null;
 
-          console.log(`[WHATSAPP] Enviando para ${recipientPhone}...`);
-          await sendWhatsAppMessage(recipientPhone, message);
-        } else if (notification.template_key === 'APPOINTMENT_CANCELLED' && notification.recipient_type === 'client') {
-          const message = `Olá ¹! Informamos que seu agendamento com ²! foi cancelado. Para agendar novamente, acesse: https://aimarco.com.br/p/³!`
-            .replace('¹!', appt.clients.full_name)
-            .replace('²!', appt.professionals.full_name)
-            .replace('³!', slug);
-
-          console.log(`[WHATSAPP] Enviando para ${recipientPhone}...`);
-          await sendWhatsAppMessage(recipientPhone, message);
-        } else if (notification.template_key === 'APPOINTMENT_RESCHEDULED' && notification.recipient_type === 'client') {
-          const message = `Olá ¹! Seu horário com ²! foi remarcado para o dia ³! às ⁴!. Confirme ou altere em: https://aimarco.com.br/p/⁵!`
-            .replace('¹!', appt.clients.full_name)
-            .replace('²!', appt.professionals.full_name)
-            .replace('³!', formattedDate)
-            .replace('⁴!', formattedTime)
-            .replace('⁵!', slug);
-
+        if (message) {
           console.log(`[WHATSAPP] Enviando para ${recipientPhone}...`);
           await sendWhatsAppMessage(recipientPhone, message);
         } else {
