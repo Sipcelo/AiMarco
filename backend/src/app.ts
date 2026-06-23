@@ -7,6 +7,7 @@ import rateLimit from "@fastify/rate-limit";
 import staticFiles from "@fastify/static";
 import { adaptHandler } from "./lib/fastify-adapter.js";
 import authPlugin from "./middleware/auth.js";
+import { supabase } from "./lib/supabase.js";
 
 // Route handlers
 import { getAvailabilityHandler } from "./routes/v1/availability/get-availability.js";
@@ -129,8 +130,35 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
 
   await fastify.register(authPlugin);
 
-  // Health check
+  // Health check (liveness barato — usado pelo Railway). Só prova que o HTTP está no ar.
   fastify.get("/health", async () => ({ status: "ok" }));
+
+  // Readiness profundo para monitor externo (UptimeRobot/Better Stack): alerta no não-200.
+  // Cobre DB fora (503) e worker morto/travado — notifications presas em pending/processing > 5 min (503).
+  fastify.get("/health/ready", async (_req, reply) => {
+    const STUCK_MINUTES = 5;
+    const cutoff = new Date(Date.now() - STUCK_MINUTES * 60 * 1000).toISOString();
+    try {
+      const { count, error } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["pending", "processing"])
+        .lt("created_at", cutoff);
+
+      if (error) {
+        reply.code(503);
+        return { status: "degraded", db: "error", stuck_notifications: null };
+      }
+
+      const stuck = count ?? 0;
+      const healthy = stuck === 0;
+      reply.code(healthy ? 200 : 503);
+      return { status: healthy ? "ok" : "degraded", db: "ok", stuck_notifications: stuck };
+    } catch {
+      reply.code(503);
+      return { status: "degraded", db: "unreachable", stuck_notifications: null };
+    }
+  });
 
   // Auth (public)
   fastify.post("/v1/auth/signup", adaptHandler(signupHandler));
