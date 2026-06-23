@@ -46,19 +46,28 @@ API e worker rodam no mesmo container (`Dockerfile` raiz, `CMD ["npm","start"]`,
 
 ## 2. Monitoramento mínimo
 
-- **Healthcheck:** `GET /health` no backend de produção — checagem manual ou serviço externo de
-  uptime (UptimeRobot/Better Stack) apontando para `https://aimarco.up.railway.app/health`.
-- **Worker:** log do Railway deve mostrar `Worker connected to database.` e
-  `Worker listening for new_notification...` após cada deploy. Ausência desses logs = worker não
-  subiu (ver achado do M7: container antigo só rodava a API).
-- **Fila de notifications:** query manual periódica durante o piloto:
-  ```sql
-  select status, count(*) from notifications group by status;
-  ```
-  `pending` acumulando (não decrescendo em minutos) = worker parado ou `LISTEN/NOTIFY` quebrado
-  (ex.: `DATABASE_URL` voltou a apontar para o Transaction pooler, que não suporta `LISTEN`).
-- Sem ferramenta de observabilidade dedicada nesta fase (Sentry/Grafana) — fora de escopo do piloto
-  controlado; candidato a P2 pós-piloto (`CLAUDE.md`).
+**Endpoint automatizado (P1):** `GET /health/ready` (`backend/src/app.ts`) — feito para um monitor de
+uptime externo (UptimeRobot/Better Stack) apontando para
+`https://aimarco.up.railway.app/health/ready`, alertando em **qualquer resposta não-200**. Um único
+monitor cobre os 3 modos de falha do piloto:
+- **API caiu** → sem resposta (timeout) → alerta.
+- **DB fora** → `503` `{db:"error"|"unreachable"}`.
+- **Worker morto/travado** → `503` `{status:"degraded", stuck_notifications:N}` quando há notifications
+  presas em `pending`/`processing` há mais de 5 min (worker saudável processa em ms).
+
+Resposta saudável: `200 {status:"ok", db:"ok", stuck_notifications:0}`. Sem PII/segredo no corpo
+(apenas contagem).
+
+> `GET /health` (sem `/ready`) permanece como **liveness barato** usado pelo Railway — só prova que o
+> HTTP está no ar. Não usar `/health` para o monitor externo: ele não vê DB nem worker.
+
+**Complementos manuais:**
+- **Worker (log):** Railway deve mostrar `Worker connected to database.` e
+  `Worker listening for new_notification...` após cada deploy. Ausência = worker não subiu (achado M7).
+- **Inspeção pontual:** `select status, count(*) from notifications group by status;` para detalhar
+  (`failed` com `failure_reason`, etc.). `pending` acumulando = worker parado ou `LISTEN/NOTIFY`
+  quebrado (ex.: `DATABASE_URL` no Transaction pooler 6543, que não suporta `LISTEN`).
+- Sem ferramenta de observabilidade dedicada (Sentry/Grafana) nesta fase — candidato a P2 pós-piloto.
 
 ## 3. ADRs da fase (decisões a registrar)
 

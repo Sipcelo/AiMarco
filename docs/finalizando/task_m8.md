@@ -95,7 +95,8 @@ cadeia 100% verde. Registrar como tal ao fechar a fase.
 ### Pendente desta auditoria
 - [x] **P0** decidir canal do cliente # opção (b) — WhatsApp via Evolution API (Baileys)
 - [x] **P0** aplicar a decisão # Evolution deployada + instância `Regina` conectada + templates usando display_name (`services/whatsapp-templates.ts`); teste real confirmado
-- [ ] **P1** ativar uptime monitor externo apontando para `/health`
+- [x] **P1** (código) endpoint `/health/ready` — DB + worker preso → 503; `/health` segue como liveness do Railway
+- [ ] **P1** (ação humana) criar monitor externo (UptimeRobot/Better Stack) em `/health/ready`, alerta no não-200
 - [ ] **P2** registrar no fechamento da fase que a cadeia §5.5 fecha com exceção WhatsApp
 - [ ] iniciar piloto com grupo controlado (1–3 profissionais) # ação humana
 - [ ] commitar: "docs: auditoria de fechamento do M8"
