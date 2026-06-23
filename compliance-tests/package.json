@@ -1,0 +1,13 @@
+{
+  "name": "aimarco-compliance-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Suite de conformidade LGPD/ANPD black-box. Independente do backend: nao importa src, bate em HTTP real, zero dependencias.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
