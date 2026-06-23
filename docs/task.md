@@ -182,13 +182,13 @@
 
 > **Roteiro executável (humano):** `docs/finalizando/roteiro-validacao-m7.md` — pré-requisitos, fluxos A/B/C, verificações, evidências e troubleshooting.
 
-- [ ] criar agendamento real via /p/:slug em produção (guest)
-- [ ] confirmar appointment salvo com snapshots e visível na agenda mobile
-- [ ] confirmar push notification em device físico
-- [ ] confirmar notificação WhatsApp processada (pending → sent) ou failure_reason compreendido
-- [ ] testar cancelamento e reagendamento pelo mobile com notificações correspondentes
-- [ ] registrar evidências (timestamps, ids, screenshots) no progress.md
-- [ ] comentar e commitar: "test: validação fim-a-fim do fluxo de piloto"
+- [x] criar agendamento real via /p/:slug em produção (guest) # b49545e1, Marcelo, 2026-06-19 11:00 UTC
+- [x] confirmar appointment salvo com snapshots e visível na agenda mobile # snapshots OK via query DB (client_name/phone, service_name/duration). "Visível no app" confirmado pelo usuário no device; GET autenticado não executado (sem credencial de teste)
+- [x] confirmar push notification em device físico # confirmado pelo usuário ("Chegou notificação")
+- [x] confirmar notificação WhatsApp processada (pending → sent) ou failure_reason compreendido # Evolution desativado de propósito (decisão do usuário); failure_reason="Failed to parse URL from pending" é o comportamento esperado e controlado (sem crash). recipient_type=professional chega "sent" (não depende do WhatsApp)
+- [x] testar cancelamento e reagendamento pelo mobile com notificações correspondentes # feito pelo usuário via app: 41803b5b reagendado→c04c163c (confirmed, rescheduled_from preservado) + 94316bd3 cancelado direto; ambos geraram notificação professional=sent
+- [x] registrar evidências (timestamps, ids, screenshots) no progress.md
+- [x] comentar e commitar: "test: validação fim-a-fim do fluxo de piloto"
 
 ### M8 — Lançamento
 

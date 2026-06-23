@@ -1,8 +1,43 @@
 # AiMarco - progress.md
 
-## Last updated: 2026-05-31
+## Last updated: 2026-06-22
 
-## Current phase: Etapa 9 — Estabilização para piloto (validada)
+## Current phase: M7 — Validação fim-a-fim (concluída)
+
+---
+
+## M7 — Validação fim-a-fim do fluxo de piloto (2026-06-22)
+
+Pré-requisito resolvido: container Railway só executava a API (`Dockerfile` `CMD ["node","dist/server.js"]`);
+worker de notificações nunca iniciava. Corrigido para `CMD ["npm","start"]` (`528f6a6`), que sobe
+API + worker via `run-p`. `DATABASE_URL` migrado para Session pooler do Supabase (porta 5432) —
+necessário porque o worker depende de `LISTEN/NOTIFY`, incompatível com Transaction pooler (6543).
+
+### Evidências
+
+- **Booking real em produção**: appointment `b49545e1` (Marcelo, `/p/regina-s-hair`,
+  2026-06-19 11:00 UTC, Corte Feminino). Snapshots confirmados via query direta no banco
+  (`client_name`, `client_phone`, `service_name`, `service_duration_minutes` preenchidos corretamente).
+- **Push notification**: confirmado em device físico Android pelo usuário.
+- **Worker ativo em produção**: log `Worker connected to database.` / `Worker listening for new_notification...`.
+- **Reagendamento real (via app mobile)**: appointment `41803b5b` ("Cliente Teste 1") reagendado
+  para `c04c163c` (2026-06-22 17:30 UTC) — `rescheduled_from_appointment_id` preservando histórico,
+  status final `confirmed`. Notificação `APPOINTMENT_RESCHEDULED` gerada (`recipient_type=professional`
+  → `sent`).
+- **Cancelamento real (via app mobile)**: appointment `94316bd3` ("Cliente 0806-1") cancelado,
+  status `cancelled`. Notificação `APPOINTMENT_CANCELLED` gerada (`professional` → `sent`).
+- **WhatsApp**: decisão deliberada de manter Evolution API desativada até decidir entre Evolution
+  vs API oficial (risco de ban vs custo/burocracia). `WHATSAPP_API_URL="pending"` faz o worker
+  falhar de forma controlada (`failure_reason: "Failed to parse URL from pending"`, status `failed`),
+  sem crash — comportamento correto enquanto a integração não for ativada.
+- **RPC órfã removida**: `create_public_appointment_v1` (nunca chamada por backend/web/mobile,
+  e referenciava colunas que não existem no schema atual — `*_snapshot`, `price_snapshot_cents`)
+  removida via migration `20260622000000_drop_orphan_public_appointment_rpc.sql`.
+
+### Pendência conhecida
+
+- "Visível na agenda mobile" confirmado visualmente pelo usuário; validação via GET autenticado
+  (token de profissional) não executada — sem credencial de teste disponível.
 
 ---
 
