@@ -196,8 +196,12 @@
 - [x] definir monitoramento mínimo: GET /health, status do worker, fila de notifications # §2 — sem ferramenta dedicada (Sentry/Grafana) nesta fase; checagem manual + query SQL de pending acumulado
 - [x] atualizar documentação oficial e registrar ADRs (buffer zero, erro 500 genérico, contrato congelado, redirect legado) # §3 — 6 ADRs registrados (incluindo rate limit 429 e WhatsApp desativado)
 - [x] criar tag v1.0.0-pilot no commit de release
-- [ ] iniciar piloto com grupo controlado (1–3 profissionais) # ação operacional do usuário (convidar profissionais reais) — não executável pelo agente
+- [x] iniciar piloto com grupo controlado (1–3 profissionais) # iniciado com a 1ª profissional (Regina); WhatsApp ativo via Evolution; smoke test fim-a-fim OK (ver progress.md M8)
 - [x] comentar e commitar: "docs: documentação de lançamento e ADRs do piloto"
+
+> **M8 CONCLUÍDO (2026-06-23).** Auditoria + remediação P0 (WhatsApp ativo) e P1 (monitoramento
+> `/health/ready` + backlog limpo) em `docs/finalizando/task_m8.md`. Smoke test do worker (criação +
+> cancelamento) validado fim-a-fim. Achados de raiz registrados como P2 pós-piloto.
 
 
 

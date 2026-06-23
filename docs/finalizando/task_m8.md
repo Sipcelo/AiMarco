@@ -99,8 +99,9 @@ cadeia 100% verde. Registrar como tal ao fechar a fase.
 - [x] **P1** (ação humana) monitor externo em `/health/ready` ativo — acusou "Down" corretamente pelo backlog antigo
 - [x] **P1** limpar backlog órfão (56 notifications `pending` 29/mai–18/jun → `failed` stale-backlog); `/health/ready` → `200 stuck=0`
 - [ ] **P2** registrar no fechamento da fase que a cadeia §5.5 fecha com exceção WhatsApp
-- [ ] iniciar piloto com grupo controlado (1–3 profissionais) # ação humana
-- [ ] commitar: "docs: auditoria de fechamento do M8"
+- [x] smoke test do worker fim-a-fim # booking `9f5b3ca5` → WhatsApp confirmação (display_name OK) + 4 cancelamentos via fluxo real (RPC→trigger→worker→WhatsApp); `/health/ready` verde
+- [x] iniciar piloto com grupo controlado # 1ª profissional (Regina) ativa, WhatsApp via Evolution
+- [x] commitar: "docs: auditoria de fechamento do M8"
 
 ### Achados durante a ativação do monitoramento (P2 pós-piloto)
 - **Worker não drena `pending` órfão.** O worker só reage a `NOTIFY` novo (`LISTEN new_notification`).

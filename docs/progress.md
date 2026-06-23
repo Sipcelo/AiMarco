@@ -2,24 +2,51 @@
 
 ## Last updated: 2026-06-23
 
-## Current phase: M8 — Lançamento (documentação concluída; piloto aguardando início pelo usuário)
+## Current phase: M8 — Lançamento (CONCLUÍDO; piloto iniciado com 1ª profissional)
 
 ---
 
-## M8 — Lançamento (2026-06-23)
+## M8 — Lançamento (2026-06-23) — CONCLUÍDO
 
 Plano de rollback, monitoramento mínimo e 6 ADRs documentados em
-`docs/finalizando/lancamento-m8.md`. Tag `v1.0.0-pilot` criada no commit de fechamento deste módulo.
+`docs/finalizando/lancamento-m8.md`. Tag `v1.0.0-pilot` criada. Auditoria de fechamento +
+remediação P0/P1 em `docs/finalizando/task_m8.md`.
 
-**Achado:** mobile não tem `expo-updates` configurado — sem canal OTA ativo. Rollback mobile real
-é reinstalar o build anterior do EAS (`eas build:list`), não rollback de update OTA. Citado no
-`task.md` original como premissa que não correspondia ao estado atual do código; corrigido na
-documentação, não implementado (adicionar OTA seria funcionalidade nova, fora do escopo de polimento).
+### WhatsApp ativado (P0 da auditoria)
+- **Evolution API** (Baileys) deployada como serviço separado no Railway
+  (`https://evolution-api-production-00f5f.up.railway.app`, v2.3.7). Instância `Regina` conectada ao
+  número da 1ª profissional. AiMarco aponta `WHATSAPP_API_URL`/`WHATSAPP_API_KEY` para a instância.
+- Templates de cliente extraídos para `services/whatsapp-templates.ts`, usando `display_name`
+  (público), não `full_name`. Sem link de reagendar/cancelar (não há página self-service do cliente).
+- **Bug de timezone corrigido:** worker formatava hora no fuso do servidor (UTC); agora em
+  `America/Sao_Paulo` (`formatAppointmentDateTime`). 17:00Z → "14:00".
 
-**Pendente (ação humana, fora do código):** iniciar piloto com grupo controlado (1–3 profissionais).
-Critérios técnicos de aceitação do M8 (`polimento-e-lancamento-fdd.md` §5.5) estão satisfeitos:
-healthcheck OK, worker ativo, 1 agendamento real fim-a-fim validado (M7), rollback e monitoramento
-definidos, tag criada.
+### Monitoramento (P1 da auditoria)
+- Endpoint `GET /health/ready` (`app.ts`): pinga DB + conta notifications presas
+  (`pending`/`processing` > 5 min) → **503** quando degradado. `/health` segue como liveness do Railway.
+- Monitor externo apontado para `/health/ready` (alerta no não-200).
+- **Backlog órfão limpo:** 56 notifications `pending` (29/mai–18/jun, criadas quando o worker não
+  rodava — nunca reivindicadas) marcadas `failed` (`stale-backlog`). `/health/ready` → `200 stuck=0`.
+
+### Smoke test do worker — fim-a-fim (2026-06-23)
+- **Booking criado** via API pública (`9f5b3ca5`, "Teste Worker", 24/06 14:00, número de teste do
+  usuário) → WhatsApp de confirmação **recebido** com nome correto "Regina S. Hair" → worker + Evolution
+  + templates OK. `/health/ready` seguiu verde (`stuck=0`).
+- **Cancelamento fim-a-fim:** 4 appointments de teste cancelados via fluxo real
+  (`cancel_appointment_v1` → trigger `on_appointment_cancelled` → notification → worker → WhatsApp).
+  4 mensagens "cancelado" recebidas; slots liberados; `/health/ready` verde.
+- Agenda da profissional limpa (sobraram só 2 testes passados como histórico: `b49545e1` completed,
+  `c04c163c` 22/06).
+
+### Achados registrados para P2 (pós-piloto)
+- Mobile sem `expo-updates` (sem OTA — rollback = reinstalar build do EAS).
+- Worker não drena `pending` órfão (só reage a `NOTIFY` novo) — origem do backlog; `/health/ready` avisa.
+- `DATABASE_URL` com espaço no fim no painel Railway (worker funciona via `config`; leitura crua falha).
+- Granularidade de slots: 30 min para serviço de 60 min remove 3 starts por booking (overlap correto,
+  não-bug; ajustar para granularidade = duração é preferência da profissional).
+
+**Critérios de aceitação §5.5 satisfeitos.** Piloto iniciado com a 1ª profissional (mãe do usuário);
+demais profissionais entrarão pela API oficial do WhatsApp (Evolution exige QR por número).
 
 ---
 
