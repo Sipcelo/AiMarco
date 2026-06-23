@@ -1,8 +1,25 @@
 # AiMarco - progress.md
 
-## Last updated: 2026-06-22
+## Last updated: 2026-06-23
 
-## Current phase: M7 — Validação fim-a-fim (concluída)
+## Current phase: M8 — Lançamento (documentação concluída; piloto aguardando início pelo usuário)
+
+---
+
+## M8 — Lançamento (2026-06-23)
+
+Plano de rollback, monitoramento mínimo e 6 ADRs documentados em
+`docs/finalizando/lancamento-m8.md`. Tag `v1.0.0-pilot` criada no commit de fechamento deste módulo.
+
+**Achado:** mobile não tem `expo-updates` configurado — sem canal OTA ativo. Rollback mobile real
+é reinstalar o build anterior do EAS (`eas build:list`), não rollback de update OTA. Citado no
+`task.md` original como premissa que não correspondia ao estado atual do código; corrigido na
+documentação, não implementado (adicionar OTA seria funcionalidade nova, fora do escopo de polimento).
+
+**Pendente (ação humana, fora do código):** iniciar piloto com grupo controlado (1–3 profissionais).
+Critérios técnicos de aceitação do M8 (`polimento-e-lancamento-fdd.md` §5.5) estão satisfeitos:
+healthcheck OK, worker ativo, 1 agendamento real fim-a-fim validado (M7), rollback e monitoramento
+definidos, tag criada.
 
 ---
 

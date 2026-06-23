@@ -192,12 +192,12 @@
 
 ### M8 — Lançamento
 
-- [ ] escrever plano de rollback (Railway, Supabase, Expo OTA)
-- [ ] definir monitoramento mínimo: GET /health, status do worker, fila de notifications
-- [ ] atualizar documentação oficial e registrar ADRs (buffer zero, erro 500 genérico, contrato congelado, redirect legado)
-- [ ] criar tag v1.0.0-pilot no commit de release
-- [ ] iniciar piloto com grupo controlado (1–3 profissionais)
-- [ ] comentar e commitar: "docs: documentação de lançamento e ADRs do piloto"
+- [x] escrever plano de rollback (Railway, Supabase, Expo OTA) # docs/finalizando/lancamento-m8.md §1 — ACHADO: mobile não tem expo-updates configurado (sem OTA); rollback real = reinstalar build anterior do EAS, não rollback de canal
+- [x] definir monitoramento mínimo: GET /health, status do worker, fila de notifications # §2 — sem ferramenta dedicada (Sentry/Grafana) nesta fase; checagem manual + query SQL de pending acumulado
+- [x] atualizar documentação oficial e registrar ADRs (buffer zero, erro 500 genérico, contrato congelado, redirect legado) # §3 — 6 ADRs registrados (incluindo rate limit 429 e WhatsApp desativado)
+- [x] criar tag v1.0.0-pilot no commit de release
+- [ ] iniciar piloto com grupo controlado (1–3 profissionais) # ação operacional do usuário (convidar profissionais reais) — não executável pelo agente
+- [x] comentar e commitar: "docs: documentação de lançamento e ADRs do piloto"
 
 
 
