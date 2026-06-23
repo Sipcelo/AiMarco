@@ -108,6 +108,15 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   });
 
   fastify.addHook("onSend", (_request, reply, _payload, done) => {
+    // Cabeçalhos de segurança aplicados a TODAS as respostas.
+    // Base legal: LGPD art. 46 (proteção contra acessos não autorizados) e
+    // Guia ANPD Pequeno Porte §52-53 (segurança das comunicações / dados em trânsito).
+    // ponytail: 4 headers no hook existente em vez de adicionar @fastify/helmet.
+    void reply.header("Strict-Transport-Security", "max-age=15552000; includeSubDomains");
+    void reply.header("X-Content-Type-Options", "nosniff");
+    void reply.header("X-Frame-Options", "DENY");
+    void reply.header("Referrer-Policy", "strict-origin-when-cross-origin");
+
     const origin = _request.headers.origin;
     if (origin && isAllowedOrigin(origin)) {
       void reply.header("Access-Control-Allow-Origin", origin);
